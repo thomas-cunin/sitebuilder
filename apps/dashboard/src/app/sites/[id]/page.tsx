@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import prisma from "@/lib/db";
+import { startGeneration } from "@/lib/generation";
+import { startDeployment } from "@/lib/dokploy";
 import { formatDate, getStatusColor, getStatusLabel } from "@/lib/utils";
 import {
   ArrowLeft,
@@ -44,27 +46,63 @@ async function getSite(id: string) {
 async function handleGenerate(formData: FormData) {
   "use server";
   const siteId = formData.get("siteId") as string;
-  await fetch(`${process.env.NEXT_PUBLIC_URL || "http://localhost:3000"}/api/sites/${siteId}/generate`, {
-    method: "POST",
+
+  const site = await prisma.site.findUnique({
+    where: { id: siteId },
   });
+
+  if (!site) {
+    redirect(`/sites/${siteId}`);
+  }
+
+  // Check if already generating
+  if (site.status === "GENERATING" || site.status === "DEPLOYING") {
+    redirect(`/sites/${siteId}`);
+  }
+
+  const clientInfo = site.clientInfo as Record<string, unknown>;
+
+  await startGeneration({
+    siteId: site.id,
+    siteName: site.name,
+    sourceUrl: site.sourceUrl || undefined,
+    clientInfo,
+    creative: clientInfo.generationMode === "creative",
+  });
+
   redirect(`/sites/${siteId}`);
 }
 
 async function handleDeploy(formData: FormData) {
   "use server";
   const siteId = formData.get("siteId") as string;
-  await fetch(`${process.env.NEXT_PUBLIC_URL || "http://localhost:3000"}/api/sites/${siteId}/deploy`, {
-    method: "POST",
+
+  const site = await prisma.site.findUnique({
+    where: { id: siteId },
   });
+
+  if (!site) {
+    redirect(`/sites/${siteId}`);
+  }
+
+  // Check if already deploying or not generated
+  if (site.status === "GENERATING" || site.status === "DEPLOYING" || site.status === "DRAFT") {
+    redirect(`/sites/${siteId}`);
+  }
+
+  await startDeployment(site.id, site.name);
+
   redirect(`/sites/${siteId}`);
 }
 
 async function handleDelete(formData: FormData) {
   "use server";
   const siteId = formData.get("siteId") as string;
-  await fetch(`${process.env.NEXT_PUBLIC_URL || "http://localhost:3000"}/api/sites/${siteId}`, {
-    method: "DELETE",
+
+  await prisma.site.delete({
+    where: { id: siteId },
   });
+
   redirect("/sites");
 }
 
