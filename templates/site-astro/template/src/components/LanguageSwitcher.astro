@@ -1,0 +1,49 @@
+---
+import { site, type Lang } from '@/lib/content';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang: currentLang } = Astro.props;
+const currentPath = Astro.url.pathname;
+
+function getLocalizedPath(targetLang: string): string {
+  let cleanPath = currentPath;
+
+  // Remove current lang prefix if exists
+  for (const l of site.langs) {
+    if (currentPath.startsWith(`/${l}/`) || currentPath === `/${l}`) {
+      cleanPath = currentPath.slice(l.length + 1) || '/';
+      break;
+    }
+  }
+
+  // Add target lang prefix (except for default)
+  if (targetLang === site.defaultLang) {
+    return cleanPath;
+  }
+  return `/${targetLang}${cleanPath === '/' ? '' : cleanPath}`;
+}
+
+const languages: Record<string, string> = {
+  fr: 'FR',
+  en: 'EN',
+};
+---
+
+<div class="flex items-center gap-2">
+  {site.langs.map((lang) => (
+    <a
+      href={getLocalizedPath(lang)}
+      class:list={[
+        'px-2 py-1 text-sm font-medium rounded transition-colors',
+        lang === currentLang
+          ? 'bg-primary-100 text-primary-700'
+          : 'text-gray-500 hover:text-primary-600 hover:bg-gray-100',
+      ]}
+    >
+      {languages[lang] || lang.toUpperCase()}
+    </a>
+  ))}
+</div>

@@ -1,0 +1,39 @@
+{
+  "name": "Mon Entreprise",
+  "url": "https://example.com",
+  "defaultLang": "fr",
+  "langs": ["fr", "en"],
+
+  "contact": {
+    "email": "contact@example.com",
+    "phone": "+33 1 23 45 67 89",
+    "address": {
+      "street": "123 Rue Example",
+      "city": "Paris",
+      "zip": "75001",
+      "country": "France"
+    }
+  },
+
+  "social": {
+    "facebook": "https://facebook.com/monentreprise",
+    "instagram": "https://instagram.com/monentreprise",
+    "linkedin": "https://linkedin.com/company/monentreprise",
+    "twitter": ""
+  },
+
+  "seo": {
+    "titleTemplate": "%s | Mon Entreprise",
+    "defaultImage": "/images/og-default.jpg"
+  },
+
+  "analytics": {
+    "plausible": "",
+    "googleAnalytics": ""
+  },
+
+  "theme": {
+    "primaryColor": "#0ea5e9",
+    "secondaryColor": "#d946ef"
+  }
+}

@@ -1,0 +1,92 @@
+<!-- Footer Component -->
+<footer class="bg-gray-900 text-gray-300">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <!-- Company Info -->
+      <div class="col-span-1 md:col-span-2">
+        <!-- SLOT: footer_logo -->
+        <span class="text-xl font-bold text-white">Logo</span>
+        <!-- SLOT: footer_description -->
+        <p class="mt-4 text-gray-400 max-w-md">
+          Description de l'entreprise et de sa mission. Quelques mots sur ce que vous faites et pourquoi vous le faites.
+        </p>
+        <!-- SLOT: social_links -->
+        <div class="mt-6 flex space-x-4">
+          <a href="#" class="text-gray-400 hover:text-white transition-colors" aria-label="Facebook">
+            <i data-lucide="facebook" class="w-5 h-5"></i>
+          </a>
+          <a href="#" class="text-gray-400 hover:text-white transition-colors" aria-label="Twitter">
+            <i data-lucide="twitter" class="w-5 h-5"></i>
+          </a>
+          <a href="#" class="text-gray-400 hover:text-white transition-colors" aria-label="LinkedIn">
+            <i data-lucide="linkedin" class="w-5 h-5"></i>
+          </a>
+          <a href="#" class="text-gray-400 hover:text-white transition-colors" aria-label="Instagram">
+            <i data-lucide="instagram" class="w-5 h-5"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div>
+        <!-- SLOT: footer_links_1 -->
+        <h3 class="text-white font-semibold mb-4">Navigation</h3>
+        <ul class="space-y-2">
+          <li><a href="/" class="hover:text-white transition-colors">Accueil</a></li>
+          <li><a href="/about" class="hover:text-white transition-colors">À propos</a></li>
+          <li><a href="/services" class="hover:text-white transition-colors">Services</a></li>
+          <li><a href="/contact" class="hover:text-white transition-colors">Contact</a></li>
+        </ul>
+      </div>
+
+      <!-- Contact Info -->
+      <div>
+        <!-- SLOT: footer_contact -->
+        <h3 class="text-white font-semibold mb-4">Contact</h3>
+        <ul class="space-y-2">
+          <li class="flex items-center">
+            <i data-lucide="mail" class="w-4 h-4 mr-2"></i>
+            <a href="mailto:contact@example.com" class="hover:text-white transition-colors">
+              contact@example.com
+            </a>
+          </li>
+          <li class="flex items-center">
+            <i data-lucide="phone" class="w-4 h-4 mr-2"></i>
+            <a href="tel:+33123456789" class="hover:text-white transition-colors">
+              +33 1 23 45 67 89
+            </a>
+          </li>
+          <li class="flex items-start">
+            <i data-lucide="map-pin" class="w-4 h-4 mr-2 mt-1"></i>
+            <span>123 Rue Example<br>75001 Paris, France</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="mt-12 pt-8 border-t border-gray-800">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <!-- Copyright -->
+        <!-- SLOT: copyright -->
+        <p class="text-gray-400 text-sm">
+          &copy; 2024 Nom de l'entreprise. Tous droits réservés.
+        </p>
+
+        <!-- Legal Links -->
+        <!-- SLOT: legal_links -->
+        <div class="mt-4 md:mt-0 flex space-x-6 text-sm">
+          <a href="/privacy" class="text-gray-400 hover:text-white transition-colors">
+            Politique de confidentialité
+          </a>
+          <a href="/terms" class="text-gray-400 hover:text-white transition-colors">
+            Conditions d'utilisation
+          </a>
+          <a href="/mentions" class="text-gray-400 hover:text-white transition-colors">
+            Mentions légales
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>

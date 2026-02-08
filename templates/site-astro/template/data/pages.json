@@ -1,0 +1,45 @@
+{
+  "home": {
+    "path": "/",
+    "seo": {
+      "title": {
+        "fr": "Accueil",
+        "en": "Home"
+      },
+      "description": {
+        "fr": "Création de sites web professionnels pour votre entreprise",
+        "en": "Professional website creation for your business"
+      }
+    },
+    "sections": [
+      {
+        "type": "hero",
+        "id": "hero"
+      },
+      {
+        "type": "services",
+        "id": "services"
+      },
+      {
+        "type": "testimonials",
+        "id": "testimonials"
+      },
+      {
+        "type": "cta",
+        "id": "cta-1"
+      },
+      {
+        "type": "pricing",
+        "id": "pricing"
+      },
+      {
+        "type": "faq",
+        "id": "faq"
+      },
+      {
+        "type": "contact",
+        "id": "contact"
+      }
+    ]
+  }
+}

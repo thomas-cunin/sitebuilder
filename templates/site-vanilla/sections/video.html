@@ -1,0 +1,86 @@
+<!-- Video Section -->
+<section id="video" class="py-20 bg-gray-900">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <!-- SLOT: video_badge -->
+      <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-500/20 text-primary-300 mb-4">
+        Vidéo
+      </span>
+
+      <!-- SLOT: video_title -->
+      <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">
+        Découvrez notre solution en action
+      </h2>
+
+      <!-- SLOT: video_subtitle -->
+      <p class="text-xl text-gray-400 max-w-2xl mx-auto">
+        Une présentation complète de nos fonctionnalités et de ce qui nous rend uniques.
+      </p>
+    </div>
+
+    <!-- Video Player -->
+    <!-- SLOT: video_embed -->
+    <div class="relative aspect-video rounded-2xl overflow-hidden shadow-2xl" data-animate x-data="{ playing: false }">
+      <!-- Thumbnail/Poster -->
+      <div
+        x-show="!playing"
+        class="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900"
+      >
+        <img
+          src="/assets/video-thumbnail.jpg"
+          alt="Video thumbnail"
+          class="w-full h-full object-cover opacity-80"
+          loading="lazy"
+        >
+
+        <!-- Play Button -->
+        <button
+          @click="playing = true"
+          class="absolute inset-0 flex items-center justify-center group"
+        >
+          <div class="w-20 h-20 rounded-full bg-primary-600 flex items-center justify-center shadow-lg group-hover:bg-primary-500 transition-colors">
+            <i data-lucide="play" class="w-8 h-8 text-white ml-1"></i>
+          </div>
+        </button>
+
+        <!-- Duration badge -->
+        <div class="absolute bottom-6 right-6 bg-black/60 backdrop-blur px-3 py-1 rounded-lg text-white text-sm">
+          3:45
+        </div>
+      </div>
+
+      <!-- Video iframe (loaded on play) -->
+      <template x-if="playing">
+        <iframe
+          src="https://www.youtube.com/embed/VIDEO_ID?autoplay=1"
+          title="Présentation vidéo"
+          class="absolute inset-0 w-full h-full"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+      </template>
+    </div>
+
+    <!-- Video Features -->
+    <!-- SLOT: video_features -->
+    <div class="mt-12 grid md:grid-cols-3 gap-8 text-center">
+      <div class="text-gray-300">
+        <i data-lucide="clock" class="w-8 h-8 mx-auto mb-3 text-primary-400"></i>
+        <h3 class="font-semibold text-white mb-1">Rapide à comprendre</h3>
+        <p class="text-sm text-gray-400">En moins de 4 minutes</p>
+      </div>
+      <div class="text-gray-300">
+        <i data-lucide="check-circle" class="w-8 h-8 mx-auto mb-3 text-primary-400"></i>
+        <h3 class="font-semibold text-white mb-1">Démo complète</h3>
+        <p class="text-sm text-gray-400">Toutes les fonctionnalités</p>
+      </div>
+      <div class="text-gray-300">
+        <i data-lucide="message-circle" class="w-8 h-8 mx-auto mb-3 text-primary-400"></i>
+        <h3 class="font-semibold text-white mb-1">Témoignages clients</h3>
+        <p class="text-sm text-gray-400">Retours d'expérience réels</p>
+      </div>
+    </div>
+  </div>
+</section>

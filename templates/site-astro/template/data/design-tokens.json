@@ -1,0 +1,263 @@
+{
+  "styles": {
+    "minimal": {
+      "name": "Minimal",
+      "description": "Clean, lots of whitespace, subtle interactions",
+      "shadows": "none",
+      "borders": "subtle",
+      "radius": "small",
+      "animations": "fade",
+      "density": "spacious"
+    },
+    "modern": {
+      "name": "Modern",
+      "description": "Contemporary with balanced elements",
+      "shadows": "medium",
+      "borders": "none",
+      "radius": "medium",
+      "animations": "slide",
+      "density": "normal"
+    },
+    "bold": {
+      "name": "Bold",
+      "description": "Strong colors, big typography, impactful",
+      "shadows": "strong",
+      "borders": "thick",
+      "radius": "large",
+      "animations": "bounce",
+      "density": "compact"
+    },
+    "glassmorphism": {
+      "name": "Glassmorphism",
+      "description": "Frosted glass effects, blur, transparency",
+      "shadows": "glow",
+      "borders": "glass",
+      "radius": "large",
+      "animations": "fade",
+      "density": "normal"
+    },
+    "brutalist": {
+      "name": "Brutalist",
+      "description": "Raw, bold borders, unconventional layouts",
+      "shadows": "hard",
+      "borders": "brutal",
+      "radius": "none",
+      "animations": "none",
+      "density": "compact"
+    },
+    "elegant": {
+      "name": "Elegant",
+      "description": "Refined, serif fonts, subtle luxury",
+      "shadows": "subtle",
+      "borders": "thin",
+      "radius": "small",
+      "animations": "fade-slow",
+      "density": "spacious"
+    },
+    "playful": {
+      "name": "Playful",
+      "description": "Fun colors, rounded shapes, bouncy animations",
+      "shadows": "colorful",
+      "borders": "dashed",
+      "radius": "full",
+      "animations": "bounce",
+      "density": "normal"
+    },
+    "dark-tech": {
+      "name": "Dark Tech",
+      "description": "Dark theme, neon accents, futuristic",
+      "shadows": "neon",
+      "borders": "glow",
+      "radius": "small",
+      "animations": "glitch",
+      "density": "normal"
+    }
+  },
+  "heroVariants": [
+    {
+      "id": "centered",
+      "name": "Centered",
+      "layout": "Titre et CTA centrés, image en fond ou absente"
+    },
+    {
+      "id": "split",
+      "name": "Split",
+      "layout": "Texte à gauche, image/illustration à droite"
+    },
+    {
+      "id": "fullscreen",
+      "name": "Fullscreen",
+      "layout": "Image plein écran avec overlay et texte centré"
+    },
+    {
+      "id": "minimal",
+      "name": "Minimal",
+      "layout": "Juste le titre et un CTA, très épuré"
+    },
+    {
+      "id": "animated",
+      "name": "Animated",
+      "layout": "Avec animation de fond (particules, vagues, gradient)"
+    },
+    {
+      "id": "video",
+      "name": "Video Background",
+      "layout": "Vidéo en arrière-plan avec overlay"
+    }
+  ],
+  "servicesVariants": [
+    {
+      "id": "grid-4",
+      "name": "Grid 4 colonnes",
+      "layout": "4 cartes en grille responsive"
+    },
+    {
+      "id": "grid-3",
+      "name": "Grid 3 colonnes",
+      "layout": "3 cartes plus larges"
+    },
+    {
+      "id": "alternating",
+      "name": "Alternating",
+      "layout": "Image/texte alternés gauche/droite"
+    },
+    {
+      "id": "tabs",
+      "name": "Tabs",
+      "layout": "Navigation par onglets"
+    },
+    {
+      "id": "accordion",
+      "name": "Accordion",
+      "layout": "Liste expansible"
+    },
+    {
+      "id": "carousel",
+      "name": "Carousel",
+      "layout": "Défilement horizontal"
+    }
+  ],
+  "testimonialsVariants": [
+    {
+      "id": "cards",
+      "name": "Cards Grid",
+      "layout": "Grille de cartes de témoignages"
+    },
+    {
+      "id": "slider",
+      "name": "Slider",
+      "layout": "Carrousel de témoignages"
+    },
+    {
+      "id": "masonry",
+      "name": "Masonry",
+      "layout": "Disposition en maçonnerie"
+    },
+    {
+      "id": "single-featured",
+      "name": "Single Featured",
+      "layout": "Un témoignage principal avec navigation"
+    },
+    {
+      "id": "marquee",
+      "name": "Marquee",
+      "layout": "Défilement continu horizontal"
+    }
+  ],
+  "animations": {
+    "none": {
+      "duration": "0ms",
+      "easing": "linear"
+    },
+    "fade": {
+      "enter": "opacity-0 -> opacity-100",
+      "duration": "300ms",
+      "easing": "ease-out"
+    },
+    "fade-slow": {
+      "enter": "opacity-0 -> opacity-100",
+      "duration": "600ms",
+      "easing": "ease-in-out"
+    },
+    "slide": {
+      "enter": "translateY(20px) opacity-0 -> translateY(0) opacity-100",
+      "duration": "400ms",
+      "easing": "ease-out"
+    },
+    "bounce": {
+      "enter": "scale-95 opacity-0 -> scale-100 opacity-100",
+      "duration": "500ms",
+      "easing": "cubic-bezier(0.68, -0.55, 0.265, 1.55)"
+    },
+    "glitch": {
+      "effect": "Effet de glitch numérique",
+      "duration": "200ms"
+    }
+  },
+  "shadows": {
+    "none": "shadow-none",
+    "subtle": "shadow-sm",
+    "medium": "shadow-md",
+    "strong": "shadow-xl",
+    "hard": "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]",
+    "glow": "shadow-lg shadow-primary-500/25",
+    "neon": "shadow-[0_0_20px_rgba(var(--primary),0.5)]",
+    "colorful": "shadow-lg shadow-secondary-500/30"
+  },
+  "borders": {
+    "none": "border-0",
+    "subtle": "border border-gray-200 dark:border-gray-800",
+    "thin": "border border-gray-300",
+    "thick": "border-2 border-gray-900",
+    "brutal": "border-4 border-black",
+    "glass": "border border-white/20",
+    "glow": "border border-primary-500/50",
+    "dashed": "border-2 border-dashed border-primary-400"
+  },
+  "radius": {
+    "none": "rounded-none",
+    "small": "rounded",
+    "medium": "rounded-lg",
+    "large": "rounded-2xl",
+    "full": "rounded-full"
+  },
+  "spacing": {
+    "compact": {
+      "section": "py-12",
+      "container": "px-4",
+      "gap": "gap-4"
+    },
+    "normal": {
+      "section": "py-16 md:py-24",
+      "container": "px-4 md:px-8",
+      "gap": "gap-6"
+    },
+    "spacious": {
+      "section": "py-24 md:py-32",
+      "container": "px-6 md:px-12",
+      "gap": "gap-8"
+    }
+  },
+  "typography": {
+    "sans": {
+      "heading": "font-sans font-bold",
+      "body": "font-sans",
+      "family": "Inter, system-ui, sans-serif"
+    },
+    "serif": {
+      "heading": "font-serif font-semibold",
+      "body": "font-sans",
+      "family": "Playfair Display, Georgia, serif"
+    },
+    "mono": {
+      "heading": "font-mono font-bold uppercase tracking-wider",
+      "body": "font-mono",
+      "family": "JetBrains Mono, monospace"
+    },
+    "mixed": {
+      "heading": "font-serif font-bold",
+      "body": "font-sans",
+      "family": "Playfair Display, Inter"
+    }
+  }
+}

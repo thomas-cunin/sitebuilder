@@ -1,0 +1,95 @@
+---
+import { t, type Lang } from '@/lib/content';
+
+interface PricingPlan {
+  name: string;
+  price: string;
+  description: string;
+  features: string[];
+  popular?: boolean;
+}
+
+interface Props {
+  plans: PricingPlan[];
+  lang: Lang;
+}
+
+const { plans, lang } = Astro.props;
+---
+
+<section id="pricing" class="section bg-white">
+  <div class="container-custom">
+    <!-- Header -->
+    <div class="text-center max-w-3xl mx-auto mb-16">
+      <h2 class="heading-2 text-gray-900">
+        {t('pricing', 'title', lang)}
+      </h2>
+      <p class="mt-4 text-lg text-gray-600">
+        {t('pricing', 'subtitle', lang)}
+      </p>
+    </div>
+
+    <!-- Pricing Grid -->
+    <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+      {plans.map((plan) => (
+        <div
+          class:list={[
+            'relative rounded-2xl p-8 transition-all duration-300',
+            plan.popular
+              ? 'bg-primary-600 text-white shadow-xl scale-105'
+              : 'bg-gray-50 hover:shadow-lg',
+          ]}
+        >
+          {plan.popular && (
+            <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-secondary-500 text-white text-sm font-medium px-4 py-1 rounded-full">
+              {t('pricing', 'popular', lang)}
+            </div>
+          )}
+
+          <h3 class:list={['text-2xl font-bold mb-2', plan.popular ? 'text-white' : 'text-gray-900']}>
+            {plan.name}
+          </h3>
+          <p class:list={['text-sm mb-6', plan.popular ? 'text-primary-100' : 'text-gray-500']}>
+            {plan.description}
+          </p>
+
+          <div class="mb-8">
+            <span class:list={['text-4xl font-bold', plan.popular ? 'text-white' : 'text-gray-900']}>
+              {plan.price}
+            </span>
+          </div>
+
+          <ul class="space-y-4 mb-8">
+            {plan.features.map((feature) => (
+              <li class="flex items-start gap-3">
+                <svg
+                  class:list={['w-5 h-5 mt-0.5 flex-shrink-0', plan.popular ? 'text-primary-200' : 'text-primary-500']}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span class:list={[plan.popular ? 'text-primary-50' : 'text-gray-600']}>
+                  {feature}
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          <a
+            href="#contact"
+            class:list={[
+              'block w-full text-center py-3 px-6 rounded-lg font-medium transition-all',
+              plan.popular
+                ? 'bg-white text-primary-600 hover:bg-primary-50'
+                : 'bg-primary-600 text-white hover:bg-primary-700',
+            ]}
+          >
+            {t('pricing', 'cta', lang)}
+          </a>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

@@ -1,0 +1,279 @@
+{
+  "nav": {
+    "fr": {
+      "home": "Accueil",
+      "services": "Services",
+      "testimonials": "Témoignages",
+      "pricing": "Tarifs",
+      "faq": "FAQ",
+      "contact": "Contact",
+      "privacy": "Confidentialité",
+      "terms": "Mentions légales"
+    },
+    "en": {
+      "home": "Home",
+      "services": "Services",
+      "testimonials": "Testimonials",
+      "pricing": "Pricing",
+      "faq": "FAQ",
+      "contact": "Contact",
+      "privacy": "Privacy",
+      "terms": "Terms"
+    }
+  },
+
+  "hero": {
+    "fr": {
+      "title": "Transformez votre vision en réalité digitale",
+      "subtitle": "Nous créons des sites web modernes et performants qui convertissent vos visiteurs en clients fidèles.",
+      "cta_primary": "Commencer",
+      "cta_secondary": "En savoir plus",
+      "trust_label": "Ils nous font confiance :"
+    },
+    "en": {
+      "title": "Transform your vision into digital reality",
+      "subtitle": "We create modern, high-performance websites that convert your visitors into loyal customers.",
+      "cta_primary": "Get Started",
+      "cta_secondary": "Learn More",
+      "trust_label": "They trust us:"
+    }
+  },
+
+  "services": {
+    "fr": {
+      "title": "Nos Services",
+      "subtitle": "Découvrez comment nous pouvons vous aider"
+    },
+    "en": {
+      "title": "Our Services",
+      "subtitle": "Discover how we can help you"
+    },
+    "items": [
+      {
+        "icon": "rocket",
+        "title": { "fr": "Sites Web Sur Mesure", "en": "Custom Websites" },
+        "description": {
+          "fr": "Création de sites web uniques et adaptés à votre image de marque, optimisés pour la conversion.",
+          "en": "Creation of unique websites tailored to your brand image, optimized for conversion."
+        }
+      },
+      {
+        "icon": "chart",
+        "title": { "fr": "Référencement SEO", "en": "SEO Optimization" },
+        "description": {
+          "fr": "Optimisation pour les moteurs de recherche afin d'améliorer votre visibilité en ligne.",
+          "en": "Search engine optimization to improve your online visibility."
+        }
+      },
+      {
+        "icon": "shield",
+        "title": { "fr": "Maintenance & Support", "en": "Maintenance & Support" },
+        "description": {
+          "fr": "Support technique continu et mises à jour régulières pour garantir la sécurité de votre site.",
+          "en": "Ongoing technical support and regular updates to ensure your site's security."
+        }
+      },
+      {
+        "icon": "users",
+        "title": { "fr": "Conseil & Stratégie", "en": "Consulting & Strategy" },
+        "description": {
+          "fr": "Accompagnement personnalisé pour définir votre stratégie digitale et atteindre vos objectifs.",
+          "en": "Personalized guidance to define your digital strategy and achieve your goals."
+        }
+      }
+    ]
+  },
+
+  "testimonials": {
+    "fr": {
+      "title": "Ce que disent nos clients",
+      "subtitle": "Des témoignages authentiques de clients satisfaits"
+    },
+    "en": {
+      "title": "What Our Clients Say",
+      "subtitle": "Authentic testimonials from satisfied customers"
+    },
+    "items": [
+      {
+        "content": {
+          "fr": "Une collaboration exceptionnelle ! L'équipe a parfaitement compris nos besoins et a livré un site qui dépasse nos attentes.",
+          "en": "An exceptional collaboration! The team perfectly understood our needs and delivered a website that exceeds our expectations."
+        },
+        "author": "Marie Dupont",
+        "role": "CEO",
+        "company": "TechStart",
+        "rating": 5
+      },
+      {
+        "content": {
+          "fr": "Professionnalisme et réactivité remarquables. Notre trafic a augmenté de 200% depuis le lancement du nouveau site.",
+          "en": "Remarkable professionalism and responsiveness. Our traffic has increased by 200% since the launch of the new site."
+        },
+        "author": "Pierre Martin",
+        "role": "Directeur Marketing",
+        "company": "InnovateCorp",
+        "rating": 5
+      },
+      {
+        "content": {
+          "fr": "Un accompagnement de qualité du début à la fin. Le résultat est à la hauteur de nos ambitions.",
+          "en": "Quality support from start to finish. The result lives up to our ambitions."
+        },
+        "author": "Sophie Bernard",
+        "role": "Fondatrice",
+        "company": "GreenLife",
+        "rating": 5
+      }
+    ]
+  },
+
+  "pricing": {
+    "fr": {
+      "title": "Nos Tarifs",
+      "subtitle": "Des offres adaptées à vos besoins",
+      "popular": "Populaire",
+      "cta": "Choisir",
+      "perMonth": "/mois"
+    },
+    "en": {
+      "title": "Our Pricing",
+      "subtitle": "Plans tailored to your needs",
+      "popular": "Popular",
+      "cta": "Choose",
+      "perMonth": "/month"
+    },
+    "items": [
+      {
+        "name": "Essentiel",
+        "price": "990€",
+        "description": { "fr": "Parfait pour les petites entreprises", "en": "Perfect for small businesses" },
+        "features": {
+          "fr": ["Site vitrine 5 pages", "Design responsive", "Optimisation SEO de base", "Formulaire de contact", "Support 30 jours"],
+          "en": ["5-page showcase website", "Responsive design", "Basic SEO optimization", "Contact form", "30-day support"]
+        },
+        "popular": false
+      },
+      {
+        "name": "Professionnel",
+        "price": "2490€",
+        "description": { "fr": "Pour les entreprises en croissance", "en": "For growing businesses" },
+        "features": {
+          "fr": ["Site vitrine 10 pages", "Design sur mesure", "SEO avancé", "Intégration CMS", "Analytics", "Support 90 jours"],
+          "en": ["10-page showcase website", "Custom design", "Advanced SEO", "CMS integration", "Analytics", "90-day support"]
+        },
+        "popular": true
+      },
+      {
+        "name": "Enterprise",
+        "price": "Sur devis",
+        "description": { "fr": "Solutions personnalisées", "en": "Custom solutions" },
+        "features": {
+          "fr": ["Pages illimitées", "Design premium", "SEO expert", "Fonctionnalités sur mesure", "Formation incluse", "Support prioritaire 1 an"],
+          "en": ["Unlimited pages", "Premium design", "Expert SEO", "Custom features", "Training included", "1-year priority support"]
+        },
+        "popular": false
+      }
+    ]
+  },
+
+  "faq": {
+    "fr": {
+      "title": "Questions Fréquentes",
+      "subtitle": "Trouvez les réponses à vos questions"
+    },
+    "en": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Find answers to your questions"
+    },
+    "items": [
+      {
+        "question": { "fr": "Combien de temps prend la création d'un site web ?", "en": "How long does it take to create a website?" },
+        "answer": {
+          "fr": "Le délai varie selon la complexité du projet. Un site vitrine standard est généralement livré en 2 à 4 semaines.",
+          "en": "The timeline varies depending on the project complexity. A standard showcase website is typically delivered in 2 to 4 weeks."
+        }
+      },
+      {
+        "question": { "fr": "Proposez-vous un service de maintenance ?", "en": "Do you offer maintenance services?" },
+        "answer": {
+          "fr": "Oui, nous proposons des forfaits de maintenance mensuels incluant les mises à jour de sécurité et le support technique.",
+          "en": "Yes, we offer monthly maintenance packages including security updates and technical support."
+        }
+      },
+      {
+        "question": { "fr": "Le site sera-t-il optimisé pour mobile ?", "en": "Will the website be mobile-optimized?" },
+        "answer": {
+          "fr": "Absolument ! Tous nos sites sont conçus en responsive design, garantissant une expérience optimale sur tous les appareils.",
+          "en": "Absolutely! All our websites are designed with responsive design, ensuring an optimal experience on all devices."
+        }
+      },
+      {
+        "question": { "fr": "Puis-je modifier le contenu moi-même ?", "en": "Can I edit the content myself?" },
+        "answer": {
+          "fr": "Oui ! Nous pouvons intégrer un CMS pour vous permettre de modifier facilement les textes et images.",
+          "en": "Yes! We can integrate a CMS to allow you to easily edit texts and images."
+        }
+      },
+      {
+        "question": { "fr": "Quels sont les modes de paiement acceptés ?", "en": "What payment methods are accepted?" },
+        "answer": {
+          "fr": "Nous acceptons les virements bancaires et les paiements par carte. Un acompte de 40% est demandé au démarrage.",
+          "en": "We accept bank transfers and card payments. A 40% deposit is required at the start of the project."
+        }
+      }
+    ]
+  },
+
+  "cta": {
+    "fr": {
+      "title": "Prêt à démarrer ?",
+      "subtitle": "Contactez-nous dès maintenant pour discuter de votre projet.",
+      "button": "Nous contacter"
+    },
+    "en": {
+      "title": "Ready to get started?",
+      "subtitle": "Contact us now to discuss your project.",
+      "button": "Contact Us"
+    }
+  },
+
+  "contact": {
+    "fr": {
+      "title": "Contactez-nous",
+      "subtitle": "Nous sommes là pour vous aider",
+      "form": {
+        "name": "Nom",
+        "email": "Email",
+        "phone": "Téléphone",
+        "message": "Message",
+        "submit": "Envoyer",
+        "success": "Message envoyé avec succès !",
+        "error": "Erreur lors de l'envoi. Veuillez réessayer."
+      }
+    },
+    "en": {
+      "title": "Contact Us",
+      "subtitle": "We are here to help",
+      "form": {
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "message": "Message",
+        "submit": "Send",
+        "success": "Message sent successfully!",
+        "error": "Error sending message. Please try again."
+      }
+    }
+  },
+
+  "footer": {
+    "fr": {
+      "description": "Création de sites web professionnels pour votre entreprise.",
+      "rights": "Tous droits réservés"
+    },
+    "en": {
+      "description": "Professional website creation for your business.",
+      "rights": "All rights reserved"
+    }
+  }
+}

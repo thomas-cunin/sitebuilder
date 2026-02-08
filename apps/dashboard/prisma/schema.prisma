@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SiteStatus {
+  DRAFT
+  GENERATING
+  GENERATED
+  DEPLOYING
+  DEPLOYED
+  ERROR
+}
+
+model Site {
+  id              String      @id @default(cuid())
+  name            String      @unique
+  displayName     String
+  sourceUrl       String?
+
+  clientInfo      Json
+  status          SiteStatus  @default(DRAFT)
+
+  dokployProjectId  String?
+  dokployAppId      String?
+  deployedUrl       String?
+  validationScore   Int?
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deployedAt      DateTime?
+
+  jobs            Job[]
+  logs            Log[]
+}
+
+model Job {
+  id          String    @id @default(cuid())
+  siteId      String
+  site        Site      @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  type        String
+  status      String    @default("PENDING")
+  progress    Int       @default(0)
+  error       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([siteId])
+}
+
+model Log {
+  id        String   @id @default(cuid())
+  siteId    String
+  site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  level     String   @default("INFO")
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([siteId])
+  @@index([createdAt])
+}
+
+model Settings {
+  id            String  @id @default("global")
+  adminPassword String
+  dokployUrl    String?
+  dokployToken  String?
+  claudeApiKey  String?
+  updatedAt     DateTime @updatedAt
+}

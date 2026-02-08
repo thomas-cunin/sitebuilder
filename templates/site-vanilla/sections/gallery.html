@@ -1,0 +1,130 @@
+<!-- Gallery Section -->
+<section id="gallery" class="py-20 bg-gray-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="text-center mb-16">
+      <!-- SLOT: gallery_badge -->
+      <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-700 mb-4">
+        Galerie
+      </span>
+
+      <!-- SLOT: gallery_title -->
+      <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+        Nos réalisations
+      </h2>
+
+      <!-- SLOT: gallery_subtitle -->
+      <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+        Découvrez quelques-uns de nos projets les plus récents et les plus réussis.
+      </p>
+    </div>
+
+    <!-- Gallery Grid -->
+    <!-- SLOT: gallery_items -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <!-- Gallery Item 1 -->
+      <div class="group relative aspect-square overflow-hidden rounded-xl" data-animate>
+        <img
+          src="/assets/gallery-1.jpg"
+          alt="Projet 1"
+          class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+          loading="lazy"
+        >
+        <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+          <div class="text-white">
+            <h3 class="font-semibold">Projet 1</h3>
+            <p class="text-sm text-gray-300">Web Design</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gallery Item 2 -->
+      <div class="group relative aspect-square overflow-hidden rounded-xl md:col-span-2 md:row-span-2" data-animate>
+        <img
+          src="/assets/gallery-2.jpg"
+          alt="Projet 2"
+          class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+          loading="lazy"
+        >
+        <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+          <div class="text-white">
+            <h3 class="font-semibold text-lg">Projet principal</h3>
+            <p class="text-sm text-gray-300">Application Mobile</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gallery Item 3 -->
+      <div class="group relative aspect-square overflow-hidden rounded-xl" data-animate>
+        <img
+          src="/assets/gallery-3.jpg"
+          alt="Projet 3"
+          class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+          loading="lazy"
+        >
+        <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+          <div class="text-white">
+            <h3 class="font-semibold">Projet 3</h3>
+            <p class="text-sm text-gray-300">Branding</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gallery Item 4 -->
+      <div class="group relative aspect-square overflow-hidden rounded-xl" data-animate>
+        <img
+          src="/assets/gallery-4.jpg"
+          alt="Projet 4"
+          class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+          loading="lazy"
+        >
+        <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+          <div class="text-white">
+            <h3 class="font-semibold">Projet 4</h3>
+            <p class="text-sm text-gray-300">UI Design</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gallery Item 5 -->
+      <div class="group relative aspect-square overflow-hidden rounded-xl" data-animate>
+        <img
+          src="/assets/gallery-5.jpg"
+          alt="Projet 5"
+          class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+          loading="lazy"
+        >
+        <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+          <div class="text-white">
+            <h3 class="font-semibold">Projet 5</h3>
+            <p class="text-sm text-gray-300">E-commerce</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gallery Item 6 -->
+      <div class="group relative aspect-square overflow-hidden rounded-xl" data-animate>
+        <img
+          src="/assets/gallery-6.jpg"
+          alt="Projet 6"
+          class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+          loading="lazy"
+        >
+        <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+          <div class="text-white">
+            <h3 class="font-semibold">Projet 6</h3>
+            <p class="text-sm text-gray-300">Dashboard</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- View All Link -->
+    <div class="text-center mt-12">
+      <a href="/portfolio" class="inline-flex items-center text-primary-600 font-medium hover:text-primary-700 transition-colors">
+        Voir tous nos projets
+        <i data-lucide="arrow-right" class="w-5 h-5 ml-2"></i>
+      </a>
+    </div>
+  </div>
+</section>

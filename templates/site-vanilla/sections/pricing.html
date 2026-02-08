@@ -1,0 +1,166 @@
+<!-- Pricing Section -->
+<section id="pricing" class="py-20 bg-gray-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="text-center mb-16">
+      <!-- SLOT: pricing_badge -->
+      <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-700 mb-4">
+        Tarifs
+      </span>
+
+      <!-- SLOT: pricing_title -->
+      <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+        Des offres adaptées à chaque besoin
+      </h2>
+
+      <!-- SLOT: pricing_subtitle -->
+      <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+        Choisissez le plan qui correspond à vos besoins. Tous incluent un support de qualité.
+      </p>
+    </div>
+
+    <!-- Pricing Toggle -->
+    <div class="flex items-center justify-center mb-12" x-data="{ annual: false }">
+      <span class="text-gray-600 mr-3" :class="{ 'text-gray-900 font-semibold': !annual }">Mensuel</span>
+      <button
+        @click="annual = !annual"
+        class="relative w-14 h-7 rounded-full bg-gray-200 transition-colors"
+        :class="{ 'bg-primary-600': annual }"
+      >
+        <span
+          class="absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-transform"
+          :class="{ 'translate-x-7': annual }"
+        ></span>
+      </button>
+      <span class="text-gray-600 ml-3" :class="{ 'text-gray-900 font-semibold': annual }">
+        Annuel <span class="text-primary-600 text-sm">(-20%)</span>
+      </span>
+    </div>
+
+    <!-- Pricing Cards -->
+    <!-- SLOT: pricing_plans -->
+    <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto" x-data="{ annual: false }">
+      <!-- Starter Plan -->
+      <div class="bg-white rounded-2xl border border-gray-200 p-8" data-animate>
+        <div class="mb-6">
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Starter</h3>
+          <p class="text-gray-600">Pour démarrer votre projet</p>
+        </div>
+        <div class="mb-6">
+          <div class="flex items-end">
+            <span class="text-4xl font-bold text-gray-900">29€</span>
+            <span class="text-gray-500 ml-2">/mois</span>
+          </div>
+        </div>
+        <ul class="space-y-4 mb-8">
+          <li class="flex items-center text-gray-600">
+            <i data-lucide="check" class="w-5 h-5 text-green-500 mr-3 flex-shrink-0"></i>
+            5 utilisateurs inclus
+          </li>
+          <li class="flex items-center text-gray-600">
+            <i data-lucide="check" class="w-5 h-5 text-green-500 mr-3 flex-shrink-0"></i>
+            10 Go de stockage
+          </li>
+          <li class="flex items-center text-gray-600">
+            <i data-lucide="check" class="w-5 h-5 text-green-500 mr-3 flex-shrink-0"></i>
+            Support par email
+          </li>
+          <li class="flex items-center text-gray-400">
+            <i data-lucide="x" class="w-5 h-5 mr-3 flex-shrink-0"></i>
+            Analytics avancés
+          </li>
+          <li class="flex items-center text-gray-400">
+            <i data-lucide="x" class="w-5 h-5 mr-3 flex-shrink-0"></i>
+            API personnalisée
+          </li>
+        </ul>
+        <a href="/contact" class="block w-full py-3 px-4 text-center text-primary-600 font-medium border border-primary-600 rounded-lg hover:bg-primary-50 transition-colors">
+          Commencer
+        </a>
+      </div>
+
+      <!-- Pro Plan (Featured) -->
+      <div class="relative bg-primary-600 rounded-2xl p-8 text-white transform scale-105 shadow-xl" data-animate>
+        <div class="absolute -top-4 left-1/2 -translate-x-1/2">
+          <span class="bg-yellow-400 text-gray-900 text-sm font-semibold px-4 py-1 rounded-full">
+            Populaire
+          </span>
+        </div>
+        <div class="mb-6">
+          <h3 class="text-xl font-semibold mb-2">Pro</h3>
+          <p class="text-primary-100">Pour les équipes en croissance</p>
+        </div>
+        <div class="mb-6">
+          <div class="flex items-end">
+            <span class="text-4xl font-bold">79€</span>
+            <span class="text-primary-200 ml-2">/mois</span>
+          </div>
+        </div>
+        <ul class="space-y-4 mb-8">
+          <li class="flex items-center">
+            <i data-lucide="check" class="w-5 h-5 text-primary-200 mr-3 flex-shrink-0"></i>
+            25 utilisateurs inclus
+          </li>
+          <li class="flex items-center">
+            <i data-lucide="check" class="w-5 h-5 text-primary-200 mr-3 flex-shrink-0"></i>
+            100 Go de stockage
+          </li>
+          <li class="flex items-center">
+            <i data-lucide="check" class="w-5 h-5 text-primary-200 mr-3 flex-shrink-0"></i>
+            Support prioritaire
+          </li>
+          <li class="flex items-center">
+            <i data-lucide="check" class="w-5 h-5 text-primary-200 mr-3 flex-shrink-0"></i>
+            Analytics avancés
+          </li>
+          <li class="flex items-center text-primary-300">
+            <i data-lucide="x" class="w-5 h-5 mr-3 flex-shrink-0"></i>
+            API personnalisée
+          </li>
+        </ul>
+        <a href="/contact" class="block w-full py-3 px-4 text-center text-primary-600 font-medium bg-white rounded-lg hover:bg-gray-100 transition-colors">
+          Commencer
+        </a>
+      </div>
+
+      <!-- Enterprise Plan -->
+      <div class="bg-white rounded-2xl border border-gray-200 p-8" data-animate>
+        <div class="mb-6">
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Enterprise</h3>
+          <p class="text-gray-600">Pour les grandes organisations</p>
+        </div>
+        <div class="mb-6">
+          <div class="flex items-end">
+            <span class="text-4xl font-bold text-gray-900">199€</span>
+            <span class="text-gray-500 ml-2">/mois</span>
+          </div>
+        </div>
+        <ul class="space-y-4 mb-8">
+          <li class="flex items-center text-gray-600">
+            <i data-lucide="check" class="w-5 h-5 text-green-500 mr-3 flex-shrink-0"></i>
+            Utilisateurs illimités
+          </li>
+          <li class="flex items-center text-gray-600">
+            <i data-lucide="check" class="w-5 h-5 text-green-500 mr-3 flex-shrink-0"></i>
+            Stockage illimité
+          </li>
+          <li class="flex items-center text-gray-600">
+            <i data-lucide="check" class="w-5 h-5 text-green-500 mr-3 flex-shrink-0"></i>
+            Support 24/7 dédié
+          </li>
+          <li class="flex items-center text-gray-600">
+            <i data-lucide="check" class="w-5 h-5 text-green-500 mr-3 flex-shrink-0"></i>
+            Analytics avancés
+          </li>
+          <li class="flex items-center text-gray-600">
+            <i data-lucide="check" class="w-5 h-5 text-green-500 mr-3 flex-shrink-0"></i>
+            API personnalisée
+          </li>
+        </ul>
+        <a href="/contact" class="block w-full py-3 px-4 text-center text-primary-600 font-medium border border-primary-600 rounded-lg hover:bg-primary-50 transition-colors">
+          Nous contacter
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

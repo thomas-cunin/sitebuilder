@@ -1,0 +1,56 @@
+---
+import { t, type Lang } from '@/lib/content';
+
+interface Service {
+  icon: string;
+  title: string;
+  description: string;
+}
+
+interface Props {
+  services: Service[];
+  lang: Lang;
+}
+
+const { services, lang } = Astro.props;
+
+const icons: Record<string, string> = {
+  rocket: 'M13 10V3L4 14h7v7l9-11h-7z',
+  shield: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+  chart: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
+  users: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
+};
+---
+
+<section id="services" class="section bg-white">
+  <div class="container-custom">
+    <!-- Header -->
+    <div class="text-center max-w-3xl mx-auto mb-16">
+      <h2 class="heading-2 text-gray-900">
+        {t('services', 'title', lang)}
+      </h2>
+      <p class="mt-4 text-lg text-gray-600">
+        {t('services', 'subtitle', lang)}
+      </p>
+    </div>
+
+    <!-- Services Grid -->
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+      {services.map((service) => (
+        <div class="group p-6 rounded-2xl bg-gray-50 hover:bg-primary-50 transition-all duration-300 hover:shadow-lg">
+          <div class="w-14 h-14 bg-primary-100 group-hover:bg-primary-200 rounded-xl flex items-center justify-center mb-5 transition-colors">
+            <svg class="w-7 h-7 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={icons[service.icon] || icons.rocket} />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">
+            {service.title}
+          </h3>
+          <p class="text-gray-600">
+            {service.description}
+          </p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

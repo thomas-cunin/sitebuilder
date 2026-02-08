@@ -1,0 +1,89 @@
+---
+import { t, nav, site, getNavLinks, type Lang } from '@/lib/content';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const navLinks = getNavLinks(lang);
+const ctaLabel = t('nav', nav.header.cta.id, lang);
+---
+
+<header class="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
+  <nav class="container-custom">
+    <div class="flex items-center justify-between h-16 md:h-20">
+      <!-- Logo -->
+      <a href={lang === 'fr' ? '/' : `/${lang}`} class="flex items-center gap-2">
+        {nav.header.logo.image ? (
+          <img src={nav.header.logo.image} alt={site.name} class="h-8" />
+        ) : (
+          <span class="text-2xl font-bold text-primary-600">{nav.header.logo.text || site.name}</span>
+        )}
+      </a>
+
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex items-center gap-8">
+        {navLinks.map((link) => (
+          <a
+            href={link.href}
+            class="text-gray-600 hover:text-primary-600 font-medium transition-colors"
+          >
+            {link.label}
+          </a>
+        ))}
+        <LanguageSwitcher lang={lang} />
+        <a href={nav.header.cta.href} class="btn-primary">
+          {ctaLabel}
+        </a>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button
+        id="mobile-menu-button"
+        class="md:hidden p-2 text-gray-600 hover:text-primary-600"
+        aria-label="Menu"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <div id="mobile-menu" class="hidden md:hidden pb-4">
+      <div class="flex flex-col gap-4">
+        {navLinks.map((link) => (
+          <a
+            href={link.href}
+            class="text-gray-600 hover:text-primary-600 font-medium transition-colors py-2"
+          >
+            {link.label}
+          </a>
+        ))}
+        <div class="py-2">
+          <LanguageSwitcher lang={lang} />
+        </div>
+        <a href={nav.header.cta.href} class="btn-primary text-center">
+          {ctaLabel}
+        </a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<script>
+  const button = document.getElementById('mobile-menu-button');
+  const menu = document.getElementById('mobile-menu');
+
+  button?.addEventListener('click', () => {
+    menu?.classList.toggle('hidden');
+  });
+
+  menu?.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => {
+      menu?.classList.add('hidden');
+    });
+  });
+</script>

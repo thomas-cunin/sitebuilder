@@ -1,0 +1,95 @@
+<!-- About Section -->
+<section id="about" class="py-20 bg-gray-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <!-- Image -->
+      <div class="relative" data-animate>
+        <!-- SLOT: about_image -->
+        <div class="relative rounded-2xl overflow-hidden">
+          <img
+            src="/assets/about-image.jpg"
+            alt="À propos de nous"
+            class="w-full h-auto object-cover"
+            loading="lazy"
+          >
+        </div>
+        <!-- Stats card overlay -->
+        <div class="absolute -bottom-6 -right-6 bg-white rounded-xl shadow-xl p-6 max-w-[200px]">
+          <div class="text-3xl font-bold text-primary-600 mb-1">10+</div>
+          <div class="text-sm text-gray-600">Années d'expérience</div>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div data-animate>
+        <!-- SLOT: about_badge -->
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-700 mb-4">
+          À propos
+        </span>
+
+        <!-- SLOT: about_title -->
+        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+          Notre histoire, notre passion
+        </h2>
+
+        <!-- SLOT: about_description -->
+        <div class="space-y-4 text-gray-600">
+          <p>
+            Depuis notre création, nous nous engageons à offrir des solutions innovantes et de qualité à nos clients. Notre équipe passionnée travaille chaque jour pour dépasser vos attentes.
+          </p>
+          <p>
+            Notre mission est simple : vous accompagner dans votre réussite en vous fournissant les outils et le support dont vous avez besoin pour atteindre vos objectifs.
+          </p>
+        </div>
+
+        <!-- SLOT: about_values -->
+        <div class="mt-8 grid grid-cols-2 gap-6">
+          <div class="flex items-start">
+            <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center mr-3">
+              <i data-lucide="target" class="w-5 h-5 text-primary-600"></i>
+            </div>
+            <div>
+              <h4 class="font-semibold text-gray-900">Excellence</h4>
+              <p class="text-sm text-gray-600">Toujours viser le meilleur</p>
+            </div>
+          </div>
+          <div class="flex items-start">
+            <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center mr-3">
+              <i data-lucide="heart" class="w-5 h-5 text-primary-600"></i>
+            </div>
+            <div>
+              <h4 class="font-semibold text-gray-900">Passion</h4>
+              <p class="text-sm text-gray-600">L'amour du travail bien fait</p>
+            </div>
+          </div>
+          <div class="flex items-start">
+            <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center mr-3">
+              <i data-lucide="users" class="w-5 h-5 text-primary-600"></i>
+            </div>
+            <div>
+              <h4 class="font-semibold text-gray-900">Équipe</h4>
+              <p class="text-sm text-gray-600">La force du collectif</p>
+            </div>
+          </div>
+          <div class="flex items-start">
+            <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center mr-3">
+              <i data-lucide="lightbulb" class="w-5 h-5 text-primary-600"></i>
+            </div>
+            <div>
+              <h4 class="font-semibold text-gray-900">Innovation</h4>
+              <p class="text-sm text-gray-600">Toujours en mouvement</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLOT: about_cta -->
+        <div class="mt-8">
+          <a href="/team" class="inline-flex items-center text-primary-600 font-medium hover:text-primary-700 transition-colors">
+            Découvrir notre équipe
+            <i data-lucide="arrow-right" class="w-5 h-5 ml-2"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

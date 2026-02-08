@@ -1,0 +1,67 @@
+<!-- Hero Section -->
+<section id="hero" class="relative py-20 lg:py-32 overflow-hidden">
+  <!-- Optional background gradient -->
+  <div class="absolute inset-0 bg-gradient-to-br from-primary-50 to-white -z-10"></div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <!-- Content -->
+      <div class="text-center lg:text-left">
+        <!-- SLOT: hero_badge -->
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-700 mb-6">
+          Nouveau
+        </span>
+
+        <!-- SLOT: hero_title -->
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+          Votre titre principal <span class="text-primary-600">impactant</span>
+        </h1>
+
+        <!-- SLOT: hero_subtitle -->
+        <p class="text-xl text-gray-600 mb-8 max-w-xl mx-auto lg:mx-0">
+          Une description accrocheuse qui explique votre proposition de valeur unique en quelques mots clairs et percutants.
+        </p>
+
+        <!-- SLOT: hero_cta -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+          <a href="/contact" class="inline-flex items-center justify-center px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors shadow-lg shadow-primary-500/25">
+            Commencer maintenant
+            <i data-lucide="arrow-right" class="w-5 h-5 ml-2"></i>
+          </a>
+          <a href="/about" class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
+            <i data-lucide="play-circle" class="w-5 h-5 mr-2"></i>
+            Voir la vidéo
+          </a>
+        </div>
+
+        <!-- SLOT: hero_trust -->
+        <div class="mt-10 flex items-center justify-center lg:justify-start gap-6 text-sm text-gray-500">
+          <div class="flex items-center">
+            <i data-lucide="check-circle" class="w-5 h-5 text-green-500 mr-2"></i>
+            Gratuit 30 jours
+          </div>
+          <div class="flex items-center">
+            <i data-lucide="check-circle" class="w-5 h-5 text-green-500 mr-2"></i>
+            Sans engagement
+          </div>
+        </div>
+      </div>
+
+      <!-- Image -->
+      <div class="relative">
+        <!-- SLOT: hero_image -->
+        <div class="relative rounded-2xl overflow-hidden shadow-2xl">
+          <img
+            src="/assets/hero-image.jpg"
+            alt="Hero image"
+            class="w-full h-auto object-cover"
+            loading="eager"
+          >
+        </div>
+        <!-- Decorative elements -->
+        <div class="absolute -top-4 -right-4 w-24 h-24 bg-primary-200 rounded-full blur-2xl opacity-60"></div>
+        <div class="absolute -bottom-4 -left-4 w-32 h-32 bg-primary-300 rounded-full blur-2xl opacity-40"></div>
+      </div>
+    </div>
+  </div>
+</section>

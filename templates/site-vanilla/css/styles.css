@@ -1,0 +1,284 @@
+/**
+ * Custom Styles for Vanilla Site Template
+ *
+ * These styles complement Tailwind CSS and provide:
+ * - Custom animations
+ * - Component-specific overrides
+ * - Print styles
+ */
+
+/* ===========================
+   Base / Reset
+   =========================== */
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid theme('colors.primary.500');
+  outline-offset: 2px;
+}
+
+/* ===========================
+   Animations
+   =========================== */
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Slide up animation */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s ease-out forwards;
+}
+
+/* Stagger animation delays */
+.animate-delay-100 { animation-delay: 100ms; }
+.animate-delay-200 { animation-delay: 200ms; }
+.animate-delay-300 { animation-delay: 300ms; }
+.animate-delay-400 { animation-delay: 400ms; }
+.animate-delay-500 { animation-delay: 500ms; }
+
+/* ===========================
+   Component Styles
+   =========================== */
+
+/* Gradient text */
+.text-gradient {
+  background: linear-gradient(135deg, var(--tw-gradient-from), var(--tw-gradient-to));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glass effect */
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Card hover effect */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.15);
+}
+
+/* Button shine effect */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(30deg);
+  transition: transform 0.6s ease;
+}
+
+.btn-shine:hover::after {
+  transform: rotate(30deg) translateX(100%);
+}
+
+/* ===========================
+   Alpine.js Transitions
+   =========================== */
+
+/* Collapse transition for Alpine.js */
+[x-cloak] {
+  display: none !important;
+}
+
+/* ===========================
+   Form Styles
+   =========================== */
+
+/* Input focus ring */
+input:focus,
+textarea:focus,
+select:focus {
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+}
+
+/* Checkbox custom style */
+input[type="checkbox"] {
+  accent-color: theme('colors.primary.600');
+}
+
+/* Radio custom style */
+input[type="radio"] {
+  accent-color: theme('colors.primary.600');
+}
+
+/* ===========================
+   Print Styles
+   =========================== */
+
+@media print {
+  /* Hide non-essential elements */
+  header,
+  footer,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Reset backgrounds */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Improve readability */
+  main {
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+
+  /* Show links */
+  a[href]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.9em;
+    color: #666;
+  }
+}
+
+/* ===========================
+   Accessibility
+   =========================== */
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .glass {
+    background: white;
+    backdrop-filter: none;
+  }
+}
+
+/* ===========================
+   Utility Classes
+   =========================== */
+
+/* Section spacing */
+.section-spacing {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+
+@media (min-width: 768px) {
+  .section-spacing {
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+  }
+}
+
+/* Container max widths */
+.container-narrow {
+  max-width: 48rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.container-wide {
+  max-width: 90rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Prose styling for content */
+.prose-custom {
+  line-height: 1.75;
+}
+
+.prose-custom h2 {
+  margin-top: 2em;
+  margin-bottom: 1em;
+  font-size: 1.5em;
+  font-weight: 700;
+}
+
+.prose-custom h3 {
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+  font-size: 1.25em;
+  font-weight: 600;
+}
+
+.prose-custom p {
+  margin-bottom: 1.25em;
+}
+
+.prose-custom ul,
+.prose-custom ol {
+  margin-bottom: 1.25em;
+  padding-left: 1.5em;
+}
+
+.prose-custom li {
+  margin-bottom: 0.5em;
+}
+
+.prose-custom a {
+  color: theme('colors.primary.600');
+  text-decoration: underline;
+}
+
+.prose-custom a:hover {
+  color: theme('colors.primary.700');
+}

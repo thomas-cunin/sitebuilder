@@ -1,0 +1,11 @@
+node_modules
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+*.md
+.DS_Store
+dist
+.astro
+.tina/__generated__

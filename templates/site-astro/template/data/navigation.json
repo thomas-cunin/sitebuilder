@@ -1,0 +1,32 @@
+{
+  "header": {
+    "logo": {
+      "text": "Logo",
+      "image": ""
+    },
+    "links": [
+      { "id": "services", "href": "#services" },
+      { "id": "testimonials", "href": "#testimonials" },
+      { "id": "pricing", "href": "#pricing" },
+      { "id": "faq", "href": "#faq" },
+      { "id": "contact", "href": "#contact" }
+    ],
+    "cta": {
+      "id": "contact",
+      "href": "#contact"
+    }
+  },
+
+  "footer": {
+    "links": [
+      { "id": "services", "href": "#services" },
+      { "id": "testimonials", "href": "#testimonials" },
+      { "id": "pricing", "href": "#pricing" },
+      { "id": "faq", "href": "#faq" }
+    ],
+    "legal": [
+      { "id": "privacy", "href": "/privacy" },
+      { "id": "terms", "href": "/terms" }
+    ]
+  }
+}

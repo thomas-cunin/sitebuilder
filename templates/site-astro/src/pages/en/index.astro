@@ -1,0 +1,35 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import Hero from '@/components/Hero.astro';
+import Services from '@/components/Services.astro';
+import Testimonials from '@/components/Testimonials.astro';
+import Pricing from '@/components/Pricing.astro';
+import FAQ from '@/components/FAQ.astro';
+import CTA from '@/components/CTA.astro';
+import ContactForm from '@/components/ContactForm.astro';
+import {
+  getServices,
+  getTestimonials,
+  getPricing,
+  getFAQ,
+  getPageSEO,
+  type Lang,
+} from '@/lib/content';
+
+const lang: Lang = 'en';
+const seo = getPageSEO('home', lang);
+---
+
+<Layout
+  title={seo.title}
+  description={seo.description}
+  lang={lang}
+>
+  <Hero lang={lang} />
+  <Services services={getServices(lang)} lang={lang} />
+  <Testimonials testimonials={getTestimonials(lang)} lang={lang} />
+  <CTA lang={lang} />
+  <Pricing plans={getPricing(lang)} lang={lang} />
+  <FAQ items={getFAQ(lang)} lang={lang} />
+  <ContactForm lang={lang} />
+</Layout>

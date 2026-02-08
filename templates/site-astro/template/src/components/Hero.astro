@@ -1,0 +1,85 @@
+---
+import { t, media, type Lang } from '@/lib/content';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+---
+
+<section class="relative pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden">
+  <!-- Background Gradient -->
+  <div class="absolute inset-0 bg-gradient-to-br from-primary-50 via-white to-secondary-50 -z-10"></div>
+
+  <!-- Decorative Elements -->
+  <div class="absolute top-20 right-0 w-72 h-72 bg-primary-200 rounded-full blur-3xl opacity-30 -z-10"></div>
+  <div class="absolute bottom-0 left-0 w-96 h-96 bg-secondary-200 rounded-full blur-3xl opacity-20 -z-10"></div>
+
+  <div class="container-custom">
+    <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+      <!-- Content -->
+      <div class="text-center lg:text-left">
+        <h1 class="heading-1 text-gray-900">
+          {t('hero', 'title', lang)}
+        </h1>
+        <p class="mt-6 text-lg md:text-xl text-gray-600 max-w-2xl mx-auto lg:mx-0">
+          {t('hero', 'subtitle', lang)}
+        </p>
+        <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+          <a href="#contact" class="btn-primary">
+            {t('hero', 'cta_primary', lang)}
+          </a>
+          <a href="#services" class="btn-outline">
+            {t('hero', 'cta_secondary', lang)}
+          </a>
+        </div>
+
+        <!-- Trust Badges -->
+        <div class="mt-12 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-gray-400">
+          <span class="text-sm">{t('hero', 'trust_label', lang)}</span>
+          <div class="flex gap-8 opacity-50">
+            {media.trust.map((client) => (
+              client.logo ? (
+                <img src={client.logo} alt={client.name} class="h-6" />
+              ) : (
+                <span class="font-semibold text-gray-600">{client.name}</span>
+              )
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <!-- Image/Visual -->
+      <div class="relative">
+        <div class="aspect-square md:aspect-[4/3] rounded-2xl bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center overflow-hidden">
+          {media.hero.image ? (
+            <img src={media.hero.image} alt={media.hero.alt[lang] || ''} class="w-full h-full object-cover" />
+          ) : (
+            <div class="text-center text-gray-400">
+              <svg class="w-24 h-24 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              <p class="text-sm">Image Hero</p>
+            </div>
+          )}
+        </div>
+
+        <!-- Floating Elements -->
+        <div class="absolute -bottom-6 -left-6 bg-white rounded-xl shadow-lg p-4 hidden md:block">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            <div>
+              <p class="font-semibold text-gray-900">+500</p>
+              <p class="text-sm text-gray-500">{lang === 'fr' ? 'Clients satisfaits' : 'Happy clients'}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

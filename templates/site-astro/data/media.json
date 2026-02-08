@@ -1,0 +1,29 @@
+{
+  "logo": {
+    "default": "/images/logo.svg",
+    "dark": "/images/logo-dark.svg",
+    "favicon": "/favicon.svg"
+  },
+
+  "hero": {
+    "image": "/images/hero.jpg",
+    "alt": {
+      "fr": "Image principale",
+      "en": "Hero image"
+    }
+  },
+
+  "og": {
+    "default": "/images/og-default.jpg"
+  },
+
+  "trust": [
+    { "name": "Client 1", "logo": "" },
+    { "name": "Client 2", "logo": "" },
+    { "name": "Client 3", "logo": "" }
+  ],
+
+  "testimonials": {
+    "avatars": {}
+  }
+}

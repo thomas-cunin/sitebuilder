@@ -1,0 +1,78 @@
+---
+import { t, type Lang } from '@/lib/content';
+
+interface FAQItem {
+  question: string;
+  answer: string;
+}
+
+interface Props {
+  items: FAQItem[];
+  lang: Lang;
+}
+
+const { items, lang } = Astro.props;
+---
+
+<section id="faq" class="section bg-gray-50">
+  <div class="container-custom">
+    <!-- Header -->
+    <div class="text-center max-w-3xl mx-auto mb-16">
+      <h2 class="heading-2 text-gray-900">
+        {t('faq', 'title', lang)}
+      </h2>
+      <p class="mt-4 text-lg text-gray-600">
+        {t('faq', 'subtitle', lang)}
+      </p>
+    </div>
+
+    <!-- FAQ Accordion -->
+    <div class="max-w-3xl mx-auto space-y-4">
+      {items.map((item, index) => (
+        <div class="faq-item bg-white rounded-xl shadow-sm overflow-hidden" data-index={index}>
+          <button
+            type="button"
+            class="faq-trigger w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors"
+            aria-expanded="false"
+          >
+            <span class="font-semibold text-gray-900 pr-4">{item.question}</span>
+            <svg
+              class="faq-icon w-5 h-5 text-primary-600 flex-shrink-0 transition-transform duration-200"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <div class="faq-content hidden px-6 pb-6">
+            <p class="text-gray-600">{item.answer}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll('.faq-trigger').forEach((trigger) => {
+    trigger.addEventListener('click', () => {
+      const item = trigger.closest('.faq-item');
+      const content = item?.querySelector('.faq-content');
+      const icon = item?.querySelector('.faq-icon');
+      const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
+
+      document.querySelectorAll('.faq-item').forEach((otherItem) => {
+        if (otherItem !== item) {
+          otherItem.querySelector('.faq-content')?.classList.add('hidden');
+          otherItem.querySelector('.faq-trigger')?.setAttribute('aria-expanded', 'false');
+          otherItem.querySelector('.faq-icon')?.classList.remove('rotate-180');
+        }
+      });
+
+      content?.classList.toggle('hidden');
+      trigger.setAttribute('aria-expanded', (!isExpanded).toString());
+      icon?.classList.toggle('rotate-180');
+    });
+  });
+</script>

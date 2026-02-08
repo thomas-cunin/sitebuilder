@@ -1,0 +1,28 @@
+{
+  "name": "template-web",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Template de site vitrine - génération statique depuis JSON",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "new-site": "node scripts/new-site.js",
+    "generate": "node scripts/generate-site.js",
+    "generate:creative": "node scripts/creative-generate.js",
+    "analyze-design": "node scripts/analyze-design.js",
+    "validate": "node scripts/validate-site.js"
+  },
+  "keywords": ["astro", "template", "vitrine", "static"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.0",
+    "@astrojs/tailwind": "^6.0.2",
+    "astro": "^5.17.1",
+    "tailwindcss": "^3.4.19"
+  },
+  "devDependencies": {
+    "puppeteer": "^24.0.0"
+  }
+}
