@@ -66,18 +66,16 @@ async function deployStaticSiteDocker(
   const serviceName = `site-${siteName}`;
   const hostDomain = `${siteName}.${SSLIP_DOMAIN}`;
 
-  // Convert container path to host path for Docker commands
-  // (Docker commands run on host via mounted socket)
-  const hostClientDir = containerToHostPath(clientDir);
-
-  // Create Dockerfile (in container path which is mounted from host)
+  // Create Dockerfile in the client directory
   await createStaticDockerfile(clientDir);
   await addLogFn(siteId, "INFO", "Dockerfile créé pour le site statique");
 
-  // Build Docker image using host path (use BuildKit for better compatibility)
+  // Build Docker image
+  // Note: Docker CLI runs inside container but connects to host daemon via socket
+  // The CLI reads files from container filesystem, daemon executes on host
   await addLogFn(siteId, "INFO", "Construction de l'image Docker...");
   try {
-    await execAsync(`DOCKER_BUILDKIT=1 docker build -t ${imageName} ${hostClientDir}`, { timeout: 180000 });
+    await execAsync(`DOCKER_BUILDKIT=1 docker build -t ${imageName} ${clientDir}`, { timeout: 180000 });
     await addLogFn(siteId, "INFO", `Image Docker construite: ${imageName}`);
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Build failed";
