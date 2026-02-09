@@ -50,6 +50,9 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 # Install Claude Code CLI and Puppeteer globally
 RUN npm install -g @anthropic-ai/claude-code puppeteer
 
+# Make global npm modules available to scripts
+ENV NODE_PATH=/usr/local/lib/node_modules
+
 # Create directories for Claude auth and data
 RUN mkdir -p /root/.claude /data
 
