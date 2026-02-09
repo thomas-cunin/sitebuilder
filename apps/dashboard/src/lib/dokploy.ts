@@ -136,13 +136,22 @@ export async function startDeployment(siteId: string, siteName: string): Promise
   return job.id;
 }
 
+interface DokployProject {
+  projectId: string;
+  name: string;
+  environments: Array<{
+    environmentId: string;
+    name: string;
+    applications: Array<{ applicationId: string; name: string }>;
+  }>;
+}
+
 async function runDeploymentProcess(
   jobId: string,
   siteId: string,
   siteName: string,
   config: DokployConfig
 ) {
-  const clientDir = path.join(CLIENTS_DIR, siteName);
   const projectName = `site-${siteName}`;
   const appName = "web";
 
@@ -152,10 +161,11 @@ async function runDeploymentProcess(
     await updateJobProgress(jobId, 10);
 
     let projectId: string | null = null;
+    let environmentId: string | null = null;
 
     // Try to find existing project
     try {
-      const projects = await dokployQuery<Array<{ projectId: string; name: string }>>(
+      const projects = await dokployQuery<DokployProject[]>(
         config,
         "project.all",
         {}
@@ -163,22 +173,49 @@ async function runDeploymentProcess(
       const existing = projects?.find((p) => p.name === projectName);
       if (existing) {
         projectId = existing.projectId;
+        // Get the default environment
+        if (existing.environments && existing.environments.length > 0) {
+          environmentId = existing.environments[0].environmentId;
+        }
         await addLog(siteId, "INFO", `Projet existant trouvé: ${projectId}`);
       }
-    } catch {
+    } catch (e) {
+      console.error("Error finding project:", e);
       // No projects or error, will create new
     }
 
     // Create project if not found
     if (!projectId) {
       await addLog(siteId, "INFO", "Création d'un nouveau projet...");
-      const newProject = await dokployMutation<{ projectId: string }>(
+      const newProject = await dokployMutation<DokployProject>(
         config,
         "project.create",
         { name: projectName, description: `Site généré: ${siteName}` }
       );
-      projectId = newProject.projectId;
-      await addLog(siteId, "INFO", `Projet créé: ${projectId}`);
+
+      // The response should contain the project with its environment
+      projectId = newProject?.projectId;
+      if (newProject?.environments && newProject.environments.length > 0) {
+        environmentId = newProject.environments[0].environmentId;
+      }
+
+      await addLog(siteId, "INFO", `Projet créé: ${projectId}, env: ${environmentId}`);
+    }
+
+    // If we still don't have environmentId, fetch the project to get it
+    if (projectId && !environmentId) {
+      const projectDetails = await dokployQuery<DokployProject>(
+        config,
+        "project.one",
+        { projectId }
+      );
+      if (projectDetails?.environments && projectDetails.environments.length > 0) {
+        environmentId = projectDetails.environments[0].environmentId;
+      }
+    }
+
+    if (!projectId || !environmentId) {
+      throw new Error(`Impossible de créer le projet ou récupérer l'environnement. projectId: ${projectId}, environmentId: ${environmentId}`);
     }
 
     await prisma.site.update({
@@ -194,11 +231,11 @@ async function runDeploymentProcess(
 
     // Try to find existing app in project
     try {
-      const project = await dokployQuery<{
-        environments: Array<{
-          applications: Array<{ applicationId: string; name: string }>;
-        }>;
-      }>(config, "project.one", { projectId });
+      const project = await dokployQuery<DokployProject>(
+        config,
+        "project.one",
+        { projectId }
+      );
 
       // Search in all environments
       for (const env of project?.environments || []) {
@@ -217,27 +254,32 @@ async function runDeploymentProcess(
     if (!appId) {
       await addLog(siteId, "INFO", "Création d'une nouvelle application...");
 
-      // For static sites built with Astro, we use nixpacks or dockerfile
+      // For static sites built with Astro, we need to provide environmentId
       const newApp = await dokployMutation<{ applicationId: string }>(
         config,
         "application.create",
         {
           name: appName,
           projectId: projectId,
+          environmentId: environmentId,
           description: `Site vitrine ${siteName}`,
         }
       );
-      appId = newApp.applicationId;
+      appId = newApp?.applicationId;
       await addLog(siteId, "INFO", `Application créée: ${appId}`);
 
-      // Configure the application for static site
-      // Set build path to the client directory
-      await dokployMutation(config, "application.update", {
-        applicationId: appId,
-        buildPath: `/data/storage/clients/${siteName}`,
-        // Use the dist folder from Astro build
-        publishDirectory: "dist",
-      });
+      if (appId) {
+        // Configure the application for static site
+        await dokployMutation(config, "application.update", {
+          applicationId: appId,
+          buildPath: `/data/storage/clients/${siteName}`,
+          publishDirectory: "dist",
+        });
+      }
+    }
+
+    if (!appId) {
+      throw new Error("Impossible de créer l'application");
     }
 
     await prisma.site.update({
