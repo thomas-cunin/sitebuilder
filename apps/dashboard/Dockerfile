@@ -31,11 +31,24 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Install git and bash for Claude Code CLI
-RUN apk add --no-cache git bash curl
+# Install git, bash, and Chromium for Claude Code CLI and Puppeteer
+RUN apk add --no-cache \
+    git \
+    bash \
+    curl \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont
 
-# Install Claude Code CLI globally
-RUN npm install -g @anthropic-ai/claude-code
+# Configure Puppeteer to use installed Chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+# Install Claude Code CLI and Puppeteer globally
+RUN npm install -g @anthropic-ai/claude-code puppeteer
 
 # Create directories for Claude auth and data
 RUN mkdir -p /root/.claude /data

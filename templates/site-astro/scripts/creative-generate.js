@@ -13,24 +13,8 @@ import { spawn } from 'child_process';
 import { existsSync, mkdirSync, cpSync, rmSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-
-// Import dynamique pour gérer l'absence de puppeteer en production
-let analyzeDesign = null;
-let validateSite = null;
-
-try {
-  const analyzeModule = await import('./analyze-design.js');
-  analyzeDesign = analyzeModule.analyzeDesign;
-} catch (e) {
-  console.log('\x1b[33m⚠ Module analyze-design non disponible (puppeteer manquant)\x1b[0m');
-}
-
-try {
-  const validateModule = await import('./validate-site.js');
-  validateSite = validateModule.validateSite;
-} catch (e) {
-  console.log('\x1b[33m⚠ Module validate-site non disponible\x1b[0m');
-}
+import { analyzeDesign } from './analyze-design.js';
+import { validateSite } from './validate-site.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const TEMPLATE_DIR = join(__dirname, '..');
@@ -293,15 +277,13 @@ async function main() {
   logPhase(2, 'Analyse du design');
 
   let designConfig = null;
-  if (isUrl && analyzeDesign) {
+  if (isUrl) {
     try {
       const result = await analyzeDesign(source, outputDir);
       designConfig = result?.config || null;
     } catch (e) {
       log(`⚠ Analyse échouée: ${e.message}`, c.yellow);
     }
-  } else if (isUrl && !analyzeDesign) {
-    log('→ Analyse design ignorée (puppeteer non disponible)', c.yellow);
   }
 
   if (!designConfig) {
@@ -525,7 +507,7 @@ INSTRUCTIONS CRITIQUES:
   const skipValidation = args.includes('--skip-validation');
   const noFix = args.includes('--no-fix');
 
-  if (!skipValidation && validateSite) {
+  if (!skipValidation) {
     logPhase(7, 'Validation visuelle');
 
     try {
@@ -578,8 +560,6 @@ INSTRUCTIONS CRITIQUES:
     } catch (e) {
       log(`⚠ Validation ignorée: ${e.message}`, c.yellow);
     }
-  } else if (!validateSite) {
-    log('\n⏭️  Validation ignorée (module non disponible)', c.yellow);
   } else {
     log('\n⏭️  Validation ignorée (--skip-validation)', c.yellow);
   }
