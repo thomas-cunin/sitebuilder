@@ -137,6 +137,74 @@ function detectIndustryFallback(text) {
 }
 
 /**
+ * Hide skipped sections in page templates by commenting them out
+ */
+async function hideSkippedSectionsInPages(outputDir, skippedSections) {
+  const pagesDir = join(outputDir, 'src', 'pages');
+  const fs = await import('fs/promises');
+
+  // Map section names to component names
+  const sectionToComponent = {
+    'hero': 'Hero',
+    'services': 'Services',
+    'testimonials': 'Testimonials',
+    'pricing': 'Pricing',
+    'faq': 'FAQ'
+  };
+
+  // Find all .astro page files
+  const processDir = async (dir) => {
+    try {
+      const entries = await fs.readdir(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = join(dir, entry.name);
+        if (entry.isDirectory()) {
+          await processDir(fullPath);
+        } else if (entry.name.endsWith('.astro')) {
+          await processPageFile(fullPath, skippedSections, sectionToComponent, fs);
+        }
+      }
+    } catch (e) {
+      // Directory might not exist
+    }
+  };
+
+  await processDir(pagesDir);
+}
+
+async function processPageFile(filePath, skippedSections, sectionToComponent, fs) {
+  try {
+    let content = await fs.readFile(filePath, 'utf-8');
+    let modified = false;
+
+    for (const section of skippedSections) {
+      const componentName = sectionToComponent[section];
+      if (!componentName) continue;
+
+      // Comment out the component usage (e.g., <Pricing /> or <Pricing client:load />)
+      const regex = new RegExp(`(<${componentName}[^>]*/>)`, 'g');
+      if (regex.test(content)) {
+        content = content.replace(regex, `{/* $1 Section ${section} hidden */}`);
+        modified = true;
+      }
+
+      // Also handle self-closing with attributes on multiple lines
+      const regexMultiline = new RegExp(`(<${componentName}[\\s\\S]*?/>)`, 'g');
+      if (regexMultiline.test(content) && !modified) {
+        content = content.replace(regexMultiline, `{/* $1 Section ${section} hidden */}`);
+        modified = true;
+      }
+    }
+
+    if (modified) {
+      await fs.writeFile(filePath, content);
+    }
+  } catch (e) {
+    // File might not exist or other error
+  }
+}
+
+/**
  * Fallback get industry palette
  */
 function getIndustryPaletteFallback(industry) {
@@ -715,11 +783,19 @@ INSTRUCTIONS CRITIQUES:
     outputDir: join(outputDir, 'src', 'components')
   };
 
+  const skippedSections = [];
+
   for (const agent of SECTION_AGENTS) {
     // Check condition if defined
     if (agent.condition && !agent.condition(context)) {
       logAgent(agent.name, 'skip');
       log(`  → Section ${agent.name} ignorée (non pertinente pour cette industrie)`, c.cyan);
+      skippedSections.push(agent.name);
+      // Still copy the default component to avoid import errors
+      cpSync(
+        join(TEMPLATE_DIR, 'src', 'components', agent.component),
+        join(outputDir, 'src', 'components', agent.component)
+      );
       continue;
     }
 
@@ -743,6 +819,12 @@ INSTRUCTIONS CRITIQUES:
         join(outputDir, 'src', 'components', agent.component)
       );
     }
+  }
+
+  // Update pages to hide skipped sections
+  if (skippedSections.length > 0) {
+    log(`→ Masquage des sections ignorées dans les pages...`, c.cyan);
+    await hideSkippedSectionsInPages(outputDir, skippedSections);
   }
 
   // Copier les composants non générés par agents
