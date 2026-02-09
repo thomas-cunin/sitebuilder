@@ -11,11 +11,17 @@ fi
 
 # On est root - préparer l'environnement pour l'utilisateur claude
 
-# Copier l'auth Claude si nécessaire
+# Copier l'auth Claude (incluant .credentials.json avec permissions restrictives)
 if [ -d "/root/.claude" ]; then
     mkdir -p /home/claude/.claude
-    cp -r /root/.claude/* /home/claude/.claude/ 2>/dev/null || true
+    # Copier tout, y compris les fichiers cachés et avec permissions restrictives
+    cp -a /root/.claude/. /home/claude/.claude/ 2>/dev/null || true
+    # S'assurer que .credentials.json est copié (permissions 600)
+    if [ -f "/root/.claude/.credentials.json" ]; then
+        cp -f /root/.claude/.credentials.json /home/claude/.claude/.credentials.json
+    fi
     chown -R claude:claude /home/claude/.claude
+    chmod 600 /home/claude/.claude/.credentials.json 2>/dev/null || true
 fi
 
 # S'assurer que l'utilisateur claude peut accéder au dossier courant

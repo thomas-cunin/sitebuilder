@@ -290,16 +290,23 @@ async function main() {
   log(c.bold + '╚══════════════════════════════════════════════════════╝\n' + c.reset);
 
   // Vérifier si le dossier existe
+  const forceOverwrite = args.includes('--force') || args.includes('-y');
   if (existsSync(outputDir)) {
-    log(`⚠ Le dossier ${outputDir} existe déjà`, c.yellow);
-    const readline = await import('readline');
-    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-    const answer = await new Promise(resolve => rl.question('Écraser ? (y/N) ', resolve));
-    rl.close();
-    if (answer.toLowerCase() !== 'y') {
-      process.exit(0);
+    // En mode non-interactif (pas de TTY) ou avec --force, écraser automatiquement
+    if (!process.stdin.isTTY || forceOverwrite) {
+      log(`→ Écrasement du dossier existant ${outputDir}`, c.yellow);
+      rmSync(outputDir, { recursive: true, force: true });
+    } else {
+      log(`⚠ Le dossier ${outputDir} existe déjà`, c.yellow);
+      const readline = await import('readline');
+      const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+      const answer = await new Promise(resolve => rl.question('Écraser ? (y/N) ', resolve));
+      rl.close();
+      if (answer.toLowerCase() !== 'y') {
+        process.exit(0);
+      }
+      rmSync(outputDir, { recursive: true, force: true });
     }
-    rmSync(outputDir, { recursive: true, force: true });
   }
 
   // Phase 1: Setup
