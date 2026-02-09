@@ -31,11 +31,12 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Install git, bash, and Chromium for Claude Code CLI and Puppeteer
+# Install git, bash, Docker CLI, and Chromium for Claude Code CLI and Puppeteer
 RUN apk add --no-cache \
     git \
     bash \
     curl \
+    docker-cli \
     chromium \
     nss \
     freetype \
