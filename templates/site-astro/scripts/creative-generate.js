@@ -60,6 +60,9 @@ try {
 const TEMPLATE_DIR = join(__dirname, '..');
 const PROMPTS_DIR = join(TEMPLATE_DIR, 'prompts', 'agents');
 
+// Output directory for generated sites - use CLIENTS_DIR env var if set
+const CLIENTS_DIR = process.env.CLIENTS_DIR || join(TEMPLATE_DIR, 'clients');
+
 // Couleurs terminal
 const c = {
   reset: '\x1b[0m',
@@ -282,7 +285,7 @@ async function main() {
   }
 
   const [source, clientName] = filteredArgs;
-  const outputDir = join(TEMPLATE_DIR, 'clients', clientName);
+  const outputDir = join(CLIENTS_DIR, clientName);
   const isUrl = source.startsWith('http://') || source.startsWith('https://');
 
   log('\n' + c.bold + '╔══════════════════════════════════════════════════════╗' + c.reset);

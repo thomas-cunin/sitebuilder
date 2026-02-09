@@ -1,8 +1,137 @@
 import path from "path";
+import { exec } from "child_process";
+import { promisify } from "util";
 import prisma from "./db";
+
+const execAsync = promisify(exec);
 
 // Base paths - configurable via env vars
 const CLIENTS_DIR = process.env.CLIENTS_DIR || path.join(process.cwd(), "..", "..", "storage", "clients");
+
+// Host path mapping (container /data = host /home/debian/sitebuilder)
+const CONTAINER_DATA_PATH = "/data";
+const HOST_DATA_PATH = process.env.HOST_DATA_PATH || "/home/debian/sitebuilder";
+
+// Dokploy server base domain
+const SSLIP_DOMAIN = process.env.SSLIP_DOMAIN || "152.228.131.87.sslip.io";
+
+/**
+ * Convert container path to host path for Dokploy access
+ */
+function containerToHostPath(containerPath: string): string {
+  if (containerPath.startsWith(CONTAINER_DATA_PATH)) {
+    return containerPath.replace(CONTAINER_DATA_PATH, HOST_DATA_PATH);
+  }
+  return containerPath;
+}
+
+/**
+ * Create a simple nginx Dockerfile for serving static files
+ */
+async function createStaticDockerfile(clientDir: string): Promise<void> {
+  const fs = await import("fs/promises");
+
+  const dockerfileContent = `FROM nginx:alpine
+COPY dist/ /usr/share/nginx/html/
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+`;
+
+  await fs.writeFile(path.join(clientDir, "Dockerfile"), dockerfileContent);
+}
+
+/**
+ * Check if Docker is available (socket mounted)
+ */
+async function isDockerAvailable(): Promise<boolean> {
+  try {
+    await execAsync("docker info", { timeout: 5000 });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Build and deploy a static site using Docker Swarm directly
+ * This bypasses Dokploy's git-based build system
+ */
+async function deployStaticSiteDocker(
+  siteName: string,
+  clientDir: string,
+  siteId: string,
+  addLogFn: (siteId: string, level: string, message: string) => Promise<void>
+): Promise<string> {
+  const imageName = `site-${siteName}:latest`;
+  const serviceName = `site-${siteName}`;
+  const hostDomain = `${siteName}.${SSLIP_DOMAIN}`;
+
+  // Convert container path to host path for Docker commands
+  // (Docker commands run on host via mounted socket)
+  const hostClientDir = containerToHostPath(clientDir);
+
+  // Create Dockerfile (in container path which is mounted from host)
+  await createStaticDockerfile(clientDir);
+  await addLogFn(siteId, "INFO", "Dockerfile créé pour le site statique");
+
+  // Build Docker image using host path
+  await addLogFn(siteId, "INFO", "Construction de l'image Docker...");
+  try {
+    await execAsync(`docker build -t ${imageName} ${hostClientDir}`, { timeout: 180000 });
+    await addLogFn(siteId, "INFO", `Image Docker construite: ${imageName}`);
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "Build failed";
+    await addLogFn(siteId, "ERROR", `Erreur build Docker: ${msg}`);
+    throw new Error(`Docker build failed: ${msg}`);
+  }
+
+  // Check if service exists
+  let serviceExists = false;
+  try {
+    await execAsync(`docker service inspect ${serviceName}`);
+    serviceExists = true;
+  } catch {
+    serviceExists = false;
+  }
+
+  // Deploy or update service
+  const labels = [
+    `--label traefik.enable=true`,
+    `--label "traefik.http.routers.${serviceName}.rule=Host(\\\`${hostDomain}\\\`)"`,
+    `--label traefik.http.routers.${serviceName}.entrypoints=websecure`,
+    `--label traefik.http.routers.${serviceName}.tls=true`,
+    `--label traefik.http.routers.${serviceName}.tls.certresolver=letsencrypt`,
+    `--label traefik.http.services.${serviceName}.loadbalancer.server.port=80`,
+  ].join(" ");
+
+  if (serviceExists) {
+    await addLogFn(siteId, "INFO", "Mise à jour du service existant...");
+    try {
+      await execAsync(`docker service update --image ${imageName} --force ${serviceName}`, { timeout: 120000 });
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Update failed";
+      await addLogFn(siteId, "ERROR", `Erreur mise à jour: ${msg}`);
+      throw error;
+    }
+  } else {
+    await addLogFn(siteId, "INFO", "Création du service Docker Swarm...");
+    try {
+      await execAsync(
+        `docker service create --name ${serviceName} --network dokploy-network ${labels} ${imageName}`,
+        { timeout: 120000 }
+      );
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Create failed";
+      await addLogFn(siteId, "ERROR", `Erreur création service: ${msg}`);
+      throw error;
+    }
+  }
+
+  const deployedUrl = `https://${hostDomain}`;
+  await addLogFn(siteId, "INFO", `Service déployé: ${deployedUrl}`);
+
+  return deployedUrl;
+}
 
 interface DokployConfig {
   url: string;
@@ -152,191 +281,81 @@ async function runDeploymentProcess(
   siteName: string,
   config: DokployConfig
 ) {
-  const projectName = `site-${siteName}`;
-  const appName = "web";
-
   try {
-    // Step 1: Get or create project
-    await addLog(siteId, "INFO", "Recherche/création du projet Dokploy...");
+    // Step 1: Verify site files exist
+    await addLog(siteId, "INFO", "Vérification des fichiers du site...");
     await updateJobProgress(jobId, 10);
 
-    let projectId: string | null = null;
-    let environmentId: string | null = null;
+    const clientDir = path.join(CLIENTS_DIR, siteName);
+    const fs = await import("fs/promises");
 
-    // Try to find existing project
     try {
-      const projects = await dokployQuery<DokployProject[]>(
-        config,
-        "project.all",
-        {}
+      await fs.access(path.join(clientDir, "dist"));
+    } catch {
+      throw new Error(`Dossier dist non trouvé dans ${clientDir}. Le site doit être généré avant le déploiement.`);
+    }
+
+    await addLog(siteId, "INFO", "Fichiers du site trouvés");
+    await updateJobProgress(jobId, 20);
+
+    // Step 2: Check if Docker is available and deploy
+    let deployedUrl = "";
+    const dockerAvailable = await isDockerAvailable();
+
+    if (dockerAvailable) {
+      // Deploy using Docker Swarm directly (preferred method)
+      await addLog(siteId, "INFO", "Déploiement via Docker Swarm...");
+      await updateJobProgress(jobId, 30);
+
+      deployedUrl = await deployStaticSiteDocker(
+        siteName,
+        clientDir,
+        siteId,
+        addLog
       );
+    } else {
+      // Docker not available - provide instructions for manual deployment
+      await addLog(siteId, "WARN", "Docker non disponible - déploiement manuel requis");
+      await addLog(siteId, "INFO", "Le site a été généré avec succès. Pour le déployer:");
+      await addLog(siteId, "INFO", `1. Copier ${clientDir}/dist vers le serveur`);
+      await addLog(siteId, "INFO", "2. Configurer un serveur web (nginx) pour servir les fichiers");
+
+      // Create a deployment URL placeholder
+      deployedUrl = `https://${siteName}.${SSLIP_DOMAIN}`;
+      await addLog(siteId, "INFO", `URL prévue après déploiement: ${deployedUrl}`);
+    }
+
+    await updateJobProgress(jobId, 80);
+
+    // Step 3: Optional - Register with Dokploy for management
+    // Try to create/update Dokploy project for tracking
+    try {
+      const projectName = `site-${siteName}`;
+      let projectId: string | null = null;
+
+      const projects = await dokployQuery<DokployProject[]>(config, "project.all", {});
       const existing = projects?.find((p) => p.name === projectName);
+
       if (existing) {
         projectId = existing.projectId;
-        // Get the default environment
-        if (existing.environments && existing.environments.length > 0) {
-          environmentId = existing.environments[0].environmentId;
-        }
-        await addLog(siteId, "INFO", `Projet existant trouvé: ${projectId}`);
-      }
-    } catch (e) {
-      console.error("Error finding project:", e);
-      // No projects or error, will create new
-    }
-
-    // Create project if not found
-    if (!projectId) {
-      await addLog(siteId, "INFO", "Création d'un nouveau projet...");
-      const newProject = await dokployMutation<DokployProject>(
-        config,
-        "project.create",
-        { name: projectName, description: `Site généré: ${siteName}` }
-      );
-
-      // The response should contain the project with its environment
-      projectId = newProject?.projectId;
-      if (newProject?.environments && newProject.environments.length > 0) {
-        environmentId = newProject.environments[0].environmentId;
+      } else {
+        const newProject = await dokployMutation<DokployProject>(
+          config,
+          "project.create",
+          { name: projectName, description: `Site généré: ${siteName}` }
+        );
+        projectId = newProject?.projectId;
       }
 
-      await addLog(siteId, "INFO", `Projet créé: ${projectId}, env: ${environmentId}`);
-    }
-
-    // If we still don't have environmentId, fetch the project to get it
-    if (projectId && !environmentId) {
-      const projectDetails = await dokployQuery<DokployProject>(
-        config,
-        "project.one",
-        { projectId }
-      );
-      if (projectDetails?.environments && projectDetails.environments.length > 0) {
-        environmentId = projectDetails.environments[0].environmentId;
-      }
-    }
-
-    if (!projectId || !environmentId) {
-      throw new Error(`Impossible de créer le projet ou récupérer l'environnement. projectId: ${projectId}, environmentId: ${environmentId}`);
-    }
-
-    await prisma.site.update({
-      where: { id: siteId },
-      data: { dokployProjectId: projectId },
-    });
-
-    // Step 2: Get or create application
-    await addLog(siteId, "INFO", "Recherche/création de l'application...");
-    await updateJobProgress(jobId, 30);
-
-    let appId: string | null = null;
-
-    // Try to find existing app in project
-    try {
-      const project = await dokployQuery<DokployProject>(
-        config,
-        "project.one",
-        { projectId }
-      );
-
-      // Search in all environments
-      for (const env of project?.environments || []) {
-        const existingApp = env.applications?.find((a) => a.name === appName);
-        if (existingApp) {
-          appId = existingApp.applicationId;
-          await addLog(siteId, "INFO", `Application existante trouvée: ${appId}`);
-          break;
-        }
-      }
-    } catch {
-      // Will create new app
-    }
-
-    // Create application if not found
-    if (!appId) {
-      await addLog(siteId, "INFO", "Création d'une nouvelle application...");
-
-      // For static sites built with Astro, we need to provide environmentId
-      const newApp = await dokployMutation<{ applicationId: string }>(
-        config,
-        "application.create",
-        {
-          name: appName,
-          projectId: projectId,
-          environmentId: environmentId,
-          description: `Site vitrine ${siteName}`,
-        }
-      );
-      appId = newApp?.applicationId;
-      await addLog(siteId, "INFO", `Application créée: ${appId}`);
-
-      if (appId) {
-        // Configure the application for static site
-        await dokployMutation(config, "application.update", {
-          applicationId: appId,
-          buildPath: `/data/storage/clients/${siteName}`,
-          publishDirectory: "dist",
+      if (projectId) {
+        await prisma.site.update({
+          where: { id: siteId },
+          data: { dokployProjectId: projectId },
         });
       }
-    }
-
-    if (!appId) {
-      throw new Error("Impossible de créer l'application");
-    }
-
-    await prisma.site.update({
-      where: { id: siteId },
-      data: { dokployAppId: appId },
-    });
-
-    // Step 3: Deploy
-    await addLog(siteId, "INFO", "Lancement du déploiement...");
-    await updateJobProgress(jobId, 50);
-
-    await dokployMutation(config, "application.deploy", { applicationId: appId });
-
-    await addLog(siteId, "INFO", "Déploiement lancé, en attente...");
-    await updateJobProgress(jobId, 70);
-
-    // Step 4: Wait for deployment and get URL
-    // Poll for deployment status
-    let deployedUrl = "";
-    let attempts = 0;
-    const maxAttempts = 30; // 5 minutes max
-
-    while (attempts < maxAttempts) {
-      await new Promise((resolve) => setTimeout(resolve, 10000)); // Wait 10 seconds
-      attempts++;
-
-      try {
-        const appInfo = await dokployQuery<{
-          applicationStatus: string;
-          domains: Array<{ host: string; https: boolean }>;
-        }>(config, "application.one", { applicationId: appId });
-
-        if (appInfo.applicationStatus === "done" || appInfo.applicationStatus === "running") {
-          // Get the URL from domains
-          if (appInfo.domains && appInfo.domains.length > 0) {
-            const domain = appInfo.domains[0];
-            deployedUrl = `${domain.https ? "https" : "http"}://${domain.host}`;
-          } else {
-            // Generate a default URL
-            deployedUrl = `https://${siteName}.${new URL(config.url).hostname.replace(/:\d+$/, "")}.sslip.io`;
-          }
-          break;
-        }
-
-        if (appInfo.applicationStatus === "error") {
-          throw new Error("Le déploiement a échoué sur Dokploy");
-        }
-
-        await updateJobProgress(jobId, 70 + Math.min(attempts, 20));
-      } catch (pollError) {
-        // Continue polling
-        console.error("Poll error:", pollError);
-      }
-    }
-
-    if (!deployedUrl) {
-      deployedUrl = `https://${siteName}.${new URL(config.url).hostname.replace(/:\d+$/, "")}.sslip.io`;
+    } catch (dokployError) {
+      // Dokploy registration is optional, log but don't fail
+      await addLog(siteId, "WARN", `Enregistrement Dokploy optionnel échoué: ${dokployError instanceof Error ? dokployError.message : 'erreur'}`);
     }
 
     // Complete

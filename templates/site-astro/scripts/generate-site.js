@@ -15,6 +15,9 @@ import { analyzeDesign } from './analyze-design.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const TEMPLATE_DIR = join(__dirname, '..');
 
+// Output directory for generated sites - use CLIENTS_DIR env var if set
+const CLIENTS_DIR = process.env.CLIENTS_DIR || join(TEMPLATE_DIR, 'clients');
+
 // Couleurs terminal
 const c = {
   reset: '\x1b[0m',
@@ -53,23 +56,30 @@ async function main() {
   }
 
   const [source, clientName] = filteredArgs;
-  const outputDir = join(TEMPLATE_DIR, 'clients', clientName);
+  const outputDir = join(CLIENTS_DIR, clientName);
 
   log('\n' + '━'.repeat(55), c.blue);
   log(`  Génération du site: ${c.green}${clientName}${c.blue}`, c.blue);
   log('━'.repeat(55) + '\n', c.blue);
 
   // Vérifier si le dossier existe
+  const forceOverwrite = args.includes('--force') || args.includes('-y');
   if (existsSync(outputDir)) {
-    log(`⚠ Le dossier ${outputDir} existe déjà`, c.yellow);
-    const readline = await import('readline');
-    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-    const answer = await new Promise(resolve => rl.question('Écraser ? (y/N) ', resolve));
-    rl.close();
-    if (answer.toLowerCase() !== 'y') {
-      process.exit(0);
+    // En mode non-interactif (pas de TTY) ou avec --force, écraser automatiquement
+    if (!process.stdin.isTTY || forceOverwrite) {
+      log(`→ Écrasement du dossier existant ${outputDir}`, c.yellow);
+      rmSync(outputDir, { recursive: true, force: true });
+    } else {
+      log(`⚠ Le dossier ${outputDir} existe déjà`, c.yellow);
+      const readline = await import('readline');
+      const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+      const answer = await new Promise(resolve => rl.question('Écraser ? (y/N) ', resolve));
+      rl.close();
+      if (answer.toLowerCase() !== 'y') {
+        process.exit(0);
+      }
+      rmSync(outputDir, { recursive: true, force: true });
     }
-    rmSync(outputDir, { recursive: true, force: true });
   }
 
   // Créer le dossier et copier le template
