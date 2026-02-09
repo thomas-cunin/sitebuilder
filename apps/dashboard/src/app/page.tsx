@@ -3,6 +3,7 @@ import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SiteCard } from "@/components/SiteCard";
+import { ClaudeStatus } from "@/components/ClaudeStatus";
 import prisma from "@/lib/db";
 import { Globe, CheckCircle, Clock, AlertCircle, Plus } from "lucide-react";
 
@@ -80,6 +81,9 @@ export default async function DashboardPage() {
             </Link>
           </Button>
         </div>
+
+        {/* Claude CLI Status */}
+        <ClaudeStatus />
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {statCards.map((stat) => (
