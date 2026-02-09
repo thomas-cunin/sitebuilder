@@ -31,28 +31,37 @@ Tu es un agent créatif spécialisé dans les sections de pricing.
 
 ## Format de sortie
 
+IMPORTANT: Le composant DOIT utiliser les props `plans` et `lang` passés par la page.
+
 ```astro
 ---
-import type { Lang } from '../lib/content';
-import contentData from '../../data/content.json';
+import { t, type Lang } from '@/lib/content';
+
+interface PricingPlan {
+  name: string;
+  price: string;
+  description: string;
+  features: string[];
+  popular?: boolean;
+}
 
 interface Props {
+  plans: PricingPlan[];
   lang: Lang;
 }
 
-const { lang } = Astro.props;
-const pricing = contentData.pricing;
+const { plans, lang } = Astro.props;
 ---
 
 <section id="pricing" class="...">
   <div class="text-center mb-16">
-    <h2>{pricing[lang].title}</h2>
-    <p>{pricing[lang].subtitle}</p>
+    <h2>{t('pricing', 'title', lang)}</h2>
+    <p>{t('pricing', 'subtitle', lang)}</p>
   </div>
 
   <div class="grid md:grid-cols-3 gap-8">
-    {pricing.items.map((plan, index) => (
-      <!-- Carte pricing créative -->
+    {plans.map((plan, index) => (
+      <!-- Carte pricing avec plan.name, plan.price, plan.description, plan.features, plan.popular -->
     ))}
   </div>
 </section>

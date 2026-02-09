@@ -32,26 +32,38 @@ Tu es un agent créatif spécialisé dans les sections de témoignages clients.
 
 ## Format de sortie
 
+IMPORTANT: Le composant DOIT utiliser les props `testimonials` et `lang` passés par la page.
+
 ```astro
 ---
-import type { Lang } from '../lib/content';
-import contentData from '../../data/content.json';
+import { t, type Lang } from '@/lib/content';
+
+interface Testimonial {
+  content: string;
+  author: string;
+  role: string;
+  company: string;
+  rating: number;
+}
 
 interface Props {
+  testimonials: Testimonial[];
   lang: Lang;
 }
 
-const { lang } = Astro.props;
-const testimonials = contentData.testimonials;
+const { testimonials, lang } = Astro.props;
 ---
 
 <section id="testimonials" class="...">
   <div class="text-center mb-16">
-    <h2>{testimonials[lang].title}</h2>
-    <p>{testimonials[lang].subtitle}</p>
+    <h2>{t('testimonials', 'title', lang)}</h2>
+    <p>{t('testimonials', 'subtitle', lang)}</p>
   </div>
 
   <!-- Layout créatif des témoignages -->
+  {testimonials.map((item) => (
+    <!-- item.content, item.author, item.role, item.company, item.rating -->
+  ))}
 </section>
 
 <style>

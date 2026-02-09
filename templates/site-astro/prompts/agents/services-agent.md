@@ -42,31 +42,37 @@ Tu reçois:
 
 ## Format de sortie
 
+IMPORTANT: Le composant DOIT utiliser les props `services` et `lang` passés par la page.
+
 ```astro
 ---
-import type { Lang } from '../lib/content';
-import contentData from '../../data/content.json';
+import { t, type Lang } from '@/lib/content';
+
+interface ServiceItem {
+  icon: string;
+  title: string;
+  description: string;
+}
 
 interface Props {
+  services: ServiceItem[];
   lang: Lang;
 }
 
-const { lang } = Astro.props;
-const services = contentData.services;
-const items = services.items;
+const { services, lang } = Astro.props;
 ---
 
 <section id="services" class="...">
   <!-- Header de section -->
   <div class="text-center mb-16">
-    <h2>{services[lang].title}</h2>
-    <p>{services[lang].subtitle}</p>
+    <h2>{t('services', 'title', lang)}</h2>
+    <p>{t('services', 'subtitle', lang)}</p>
   </div>
 
   <!-- Grille/Liste créative -->
   <div class="...">
-    {items.map((item, index) => (
-      <!-- Carte service créative -->
+    {services.map((item, index) => (
+      <!-- Carte service créative avec item.icon, item.title, item.description -->
     ))}
   </div>
 </section>

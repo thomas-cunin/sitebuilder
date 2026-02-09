@@ -28,34 +28,40 @@ Tu es un agent créatif spécialisé dans les sections FAQ/Accordéon.
 
 ## Format de sortie
 
+IMPORTANT: Le composant DOIT utiliser les props `items` et `lang` passés par la page.
+
 ```astro
 ---
-import type { Lang } from '../lib/content';
-import contentData from '../../data/content.json';
+import { t, type Lang } from '@/lib/content';
+
+interface FAQItem {
+  question: string;
+  answer: string;
+}
 
 interface Props {
+  items: FAQItem[];
   lang: Lang;
 }
 
-const { lang } = Astro.props;
-const faq = contentData.faq;
+const { items, lang } = Astro.props;
 ---
 
 <section id="faq" class="...">
   <div class="text-center mb-16">
-    <h2>{faq[lang].title}</h2>
-    <p>{faq[lang].subtitle}</p>
+    <h2>{t('faq', 'title', lang)}</h2>
+    <p>{t('faq', 'subtitle', lang)}</p>
   </div>
 
   <div class="max-w-3xl mx-auto">
-    {faq.items.map((item, index) => (
+    {items.map((item, index) => (
       <details class="group">
         <summary class="...">
-          {item.question[lang]}
+          {item.question}
           <!-- Icône -->
         </summary>
         <div class="...">
-          {item.answer[lang]}
+          {item.answer}
         </div>
       </details>
     ))}
