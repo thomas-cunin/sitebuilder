@@ -42,9 +42,41 @@ async function updateJobProgress(jobId: string, progress: number, status?: strin
 }
 
 /**
- * Make a tRPC API call to Dokploy
+ * Make a tRPC query (GET) to Dokploy
  */
-async function dokployApi<T>(
+async function dokployQuery<T>(
+  config: DokployConfig,
+  procedure: string,
+  input: Record<string, unknown> = {}
+): Promise<T> {
+  const inputParam = encodeURIComponent(JSON.stringify({ json: input }));
+  const url = `${config.url}/api/trpc/${procedure}?input=${inputParam}`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "x-api-key": config.token,
+    },
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Dokploy API error (${response.status}): ${text}`);
+  }
+
+  const data = await response.json();
+
+  if (data.error) {
+    throw new Error(data.error.json?.message || JSON.stringify(data.error));
+  }
+
+  return data.result?.data?.json as T;
+}
+
+/**
+ * Make a tRPC mutation (POST) to Dokploy
+ */
+async function dokployMutation<T>(
   config: DokployConfig,
   procedure: string,
   input: Record<string, unknown>
@@ -68,7 +100,7 @@ async function dokployApi<T>(
   const data = await response.json();
 
   if (data.error) {
-    throw new Error(data.error.message || JSON.stringify(data.error));
+    throw new Error(data.error.json?.message || JSON.stringify(data.error));
   }
 
   return data.result?.data?.json as T;
@@ -123,7 +155,7 @@ async function runDeploymentProcess(
 
     // Try to find existing project
     try {
-      const projects = await dokployApi<Array<{ projectId: string; name: string }>>(
+      const projects = await dokployQuery<Array<{ projectId: string; name: string }>>(
         config,
         "project.all",
         {}
@@ -140,7 +172,7 @@ async function runDeploymentProcess(
     // Create project if not found
     if (!projectId) {
       await addLog(siteId, "INFO", "Création d'un nouveau projet...");
-      const newProject = await dokployApi<{ projectId: string }>(
+      const newProject = await dokployMutation<{ projectId: string }>(
         config,
         "project.create",
         { name: projectName, description: `Site généré: ${siteName}` }
@@ -162,14 +194,20 @@ async function runDeploymentProcess(
 
     // Try to find existing app in project
     try {
-      const project = await dokployApi<{
-        applications: Array<{ applicationId: string; name: string }>;
+      const project = await dokployQuery<{
+        environments: Array<{
+          applications: Array<{ applicationId: string; name: string }>;
+        }>;
       }>(config, "project.one", { projectId });
 
-      const existingApp = project?.applications?.find((a) => a.name === appName);
-      if (existingApp) {
-        appId = existingApp.applicationId;
-        await addLog(siteId, "INFO", `Application existante trouvée: ${appId}`);
+      // Search in all environments
+      for (const env of project?.environments || []) {
+        const existingApp = env.applications?.find((a) => a.name === appName);
+        if (existingApp) {
+          appId = existingApp.applicationId;
+          await addLog(siteId, "INFO", `Application existante trouvée: ${appId}`);
+          break;
+        }
       }
     } catch {
       // Will create new app
@@ -180,7 +218,7 @@ async function runDeploymentProcess(
       await addLog(siteId, "INFO", "Création d'une nouvelle application...");
 
       // For static sites built with Astro, we use nixpacks or dockerfile
-      const newApp = await dokployApi<{ applicationId: string }>(
+      const newApp = await dokployMutation<{ applicationId: string }>(
         config,
         "application.create",
         {
@@ -194,7 +232,7 @@ async function runDeploymentProcess(
 
       // Configure the application for static site
       // Set build path to the client directory
-      await dokployApi(config, "application.update", {
+      await dokployMutation(config, "application.update", {
         applicationId: appId,
         buildPath: `/data/storage/clients/${siteName}`,
         // Use the dist folder from Astro build
@@ -211,7 +249,7 @@ async function runDeploymentProcess(
     await addLog(siteId, "INFO", "Lancement du déploiement...");
     await updateJobProgress(jobId, 50);
 
-    await dokployApi(config, "application.deploy", { applicationId: appId });
+    await dokployMutation(config, "application.deploy", { applicationId: appId });
 
     await addLog(siteId, "INFO", "Déploiement lancé, en attente...");
     await updateJobProgress(jobId, 70);
@@ -227,7 +265,7 @@ async function runDeploymentProcess(
       attempts++;
 
       try {
-        const appInfo = await dokployApi<{
+        const appInfo = await dokployQuery<{
           applicationStatus: string;
           domains: Array<{ host: string; https: boolean }>;
         }>(config, "application.one", { applicationId: appId });
@@ -288,7 +326,7 @@ export async function getDeploymentStatus(appId: string): Promise<unknown> {
   if (!config) return null;
 
   try {
-    return await dokployApi(config, "application.one", { applicationId: appId });
+    return await dokployQuery(config, "application.one", { applicationId: appId });
   } catch {
     return null;
   }
@@ -299,7 +337,7 @@ export async function deleteDeployment(projectId: string): Promise<void> {
   if (!config) return;
 
   try {
-    await dokployApi(config, "project.remove", { projectId });
+    await dokployMutation(config, "project.remove", { projectId });
   } catch (error) {
     console.error("Error deleting deployment:", error);
   }
