@@ -159,7 +159,7 @@ IMPORTANT: Utilise les vraies couleurs extraites des screenshots, pas des valeur
       prompt
     ], {
       cwd: outputDir,
-      stdio: ['pipe', 'pipe', 'pipe'],
+      stdio: ['ignore', 'pipe', 'pipe'],
       env: { ...process.env }
     });
 

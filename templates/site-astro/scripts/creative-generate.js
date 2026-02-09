@@ -79,7 +79,7 @@ async function runAgent(name, prompt, outputDir) {
       prompt
     ], {
       cwd: outputDir,
-      stdio: ['pipe', 'pipe', 'pipe'],
+      stdio: ['ignore', 'pipe', 'pipe'],
       env: { ...process.env }
     });
 
