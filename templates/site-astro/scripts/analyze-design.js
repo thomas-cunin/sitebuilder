@@ -153,12 +153,13 @@ IMPORTANT: Utilise les vraies couleurs extraites des screenshots, pas des valeur
   writeFileSync(promptFile, prompt);
 
   return new Promise((resolve, reject) => {
-    const claude = spawn('/bin/bash', [
-      '-c',
-      `claude --dangerously-skip-permissions -p "$(cat '${promptFile}')" --output-format text`
+    const claude = spawn('claude', [
+      '--dangerously-skip-permissions',
+      '--print',
+      prompt
     ], {
       cwd: outputDir,
-      stdio: ['inherit', 'pipe', 'pipe'],
+      stdio: ['pipe', 'pipe', 'pipe'],
       env: { ...process.env }
     });
 

@@ -72,16 +72,14 @@ function logAgent(name, status) {
 async function runAgent(name, prompt, outputDir) {
   logAgent(name, 'start');
 
-  const promptFile = join(outputDir, `.prompt-${name}.txt`);
-  writeFileSync(promptFile, prompt);
-
   return new Promise((resolve, reject) => {
-    const claude = spawn('/bin/bash', [
-      '-c',
-      `claude --dangerously-skip-permissions -p "$(cat '${promptFile}')" --output-format text`
+    const claude = spawn('claude', [
+      '--dangerously-skip-permissions',
+      '--print',
+      prompt
     ], {
       cwd: outputDir,
-      stdio: ['inherit', 'pipe', 'pipe'],
+      stdio: ['pipe', 'pipe', 'pipe'],
       env: { ...process.env }
     });
 
