@@ -13,8 +13,24 @@ import { spawn } from 'child_process';
 import { existsSync, mkdirSync, cpSync, rmSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import { analyzeDesign } from './analyze-design.js';
-import { validateSite } from './validate-site.js';
+
+// Import dynamique pour gérer l'absence de puppeteer
+let analyzeDesign = null;
+let validateSite = null;
+
+try {
+  const mod = await import('./analyze-design.js');
+  analyzeDesign = mod.analyzeDesign;
+} catch {
+  // puppeteer non disponible
+}
+
+try {
+  const mod = await import('./validate-site.js');
+  validateSite = mod.validateSite;
+} catch {
+  // puppeteer non disponible
+}
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const TEMPLATE_DIR = join(__dirname, '..');
@@ -277,13 +293,15 @@ async function main() {
   logPhase(2, 'Analyse du design');
 
   let designConfig = null;
-  if (isUrl) {
+  if (isUrl && analyzeDesign) {
     try {
       const result = await analyzeDesign(source, outputDir);
       designConfig = result?.config || null;
     } catch (e) {
       log(`⚠ Analyse échouée: ${e.message}`, c.yellow);
     }
+  } else if (isUrl) {
+    log('→ Analyse design ignorée (puppeteer non disponible)', c.yellow);
   }
 
   if (!designConfig) {
@@ -507,7 +525,7 @@ INSTRUCTIONS CRITIQUES:
   const skipValidation = args.includes('--skip-validation');
   const noFix = args.includes('--no-fix');
 
-  if (!skipValidation) {
+  if (!skipValidation && validateSite) {
     logPhase(7, 'Validation visuelle');
 
     try {
@@ -560,6 +578,8 @@ INSTRUCTIONS CRITIQUES:
     } catch (e) {
       log(`⚠ Validation ignorée: ${e.message}`, c.yellow);
     }
+  } else if (!validateSite) {
+    log('\n⏭️  Validation ignorée (puppeteer non disponible)', c.yellow);
   } else {
     log('\n⏭️  Validation ignorée (--skip-validation)', c.yellow);
   }
