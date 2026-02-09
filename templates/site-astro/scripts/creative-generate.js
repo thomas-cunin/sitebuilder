@@ -13,6 +13,7 @@ import { spawn } from 'child_process';
 import { existsSync, mkdirSync, cpSync, rmSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
+import { createClaudeLogger } from './claude-logger.js';
 
 // Import dynamique pour gérer l'absence de puppeteer
 let analyzeDesign = null;
@@ -66,11 +67,24 @@ function logAgent(name, status) {
   console.log(`  ${icons[status] || '•'} ${c.cyan}${name}${c.reset}`);
 }
 
+// Logger global pour la session
+let sessionLogger = null;
+
+function getLogger(outputDir) {
+  if (!sessionLogger) {
+    sessionLogger = createClaudeLogger(outputDir);
+  }
+  return sessionLogger;
+}
+
 /**
  * Exécute un agent Claude avec un prompt spécifique
  */
 async function runAgent(name, prompt, outputDir) {
   logAgent(name, 'start');
+
+  const logger = getLogger(outputDir);
+  const logContext = logger.start(name, prompt);
 
   return new Promise((resolve, reject) => {
     const claude = spawn('claude', [
@@ -83,31 +97,38 @@ async function runAgent(name, prompt, outputDir) {
       env: { ...process.env }
     });
 
-    let output = '';
     claude.stdout.on('data', (data) => {
-      output += data.toString();
+      const text = data.toString();
+      logContext.stdout += text;
       process.stdout.write(c.green + '.' + c.reset);
     });
 
     claude.stderr.on('data', (data) => {
       const text = data.toString();
+      logContext.stderr += text;
       if (text.includes('error') || text.includes('Error')) {
         process.stderr.write(c.yellow + text + c.reset);
       }
     });
 
     claude.on('close', (code) => {
+      // Log la fin de l'appel
+      logger.end(logContext, code);
+
       console.log('');
       if (code === 0) {
         logAgent(name, 'success');
-        resolve(output);
+        resolve(logContext.stdout);
       } else {
         logAgent(name, 'error');
         reject(new Error(`Agent ${name} failed with code ${code}`));
       }
     });
 
-    claude.on('error', reject);
+    claude.on('error', (err) => {
+      logger.end(logContext, -1, err);
+      reject(err);
+    });
   });
 }
 
@@ -589,6 +610,7 @@ INSTRUCTIONS CRITIQUES:
   console.log('╚══════════════════════════════════════════════════════╝' + c.reset);
   console.log(`\n  📁 Dossier: ${c.cyan}${outputDir}${c.reset}`);
   console.log(`  🎨 Style:   ${c.cyan}${creativeDirection.style}${c.reset}`);
+  console.log(`  📋 Logs:    ${c.cyan}${outputDir}/logs/claude-cli.log${c.reset}`);
   console.log(`\n  Prévisualiser: ${c.yellow}cd clients/${clientName} && npm run dev${c.reset}\n`);
 }
 

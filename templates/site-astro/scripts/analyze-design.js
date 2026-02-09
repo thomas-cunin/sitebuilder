@@ -11,6 +11,7 @@ import puppeteer from 'puppeteer';
 import { spawn } from 'child_process';
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
 import { dirname, join } from 'path';
+import { createClaudeLogger } from './claude-logger.js';
 
 const c = {
   reset: '\x1b[0m',
@@ -86,6 +87,7 @@ async function captureScreenshots(url, outputDir) {
 async function analyzeDesignWithClaude(screenshots, outputDir) {
   console.log(`\n${c.blue}🎨 Analyse du design avec Claude...${c.reset}`);
 
+  const logger = createClaudeLogger(outputDir);
   const designConfigPath = join(outputDir, 'design-config.json');
 
   // Construire le prompt avec références aux images
@@ -152,6 +154,9 @@ IMPORTANT: Utilise les vraies couleurs extraites des screenshots, pas des valeur
   const promptFile = join(outputDir, '.design-prompt.txt');
   writeFileSync(promptFile, prompt);
 
+  // Démarrer le logging
+  const logContext = logger.start('design-analysis', prompt);
+
   return new Promise((resolve, reject) => {
     const claude = spawn('claude', [
       '--dangerously-skip-permissions',
@@ -163,20 +168,24 @@ IMPORTANT: Utilise les vraies couleurs extraites des screenshots, pas des valeur
       env: { ...process.env }
     });
 
-    let output = '';
     claude.stdout.on('data', (data) => {
-      output += data.toString();
+      const text = data.toString();
+      logContext.stdout += text;
       process.stdout.write(c.green + '.' + c.reset);
     });
 
     claude.stderr.on('data', (data) => {
       const text = data.toString();
+      logContext.stderr += text;
       if (text.includes('error') || text.includes('Error')) {
         console.error(c.yellow + text + c.reset);
       }
     });
 
     claude.on('close', (code) => {
+      // Log la fin de l'appel
+      logger.end(logContext, code);
+
       console.log('\n');
       if (existsSync(designConfigPath)) {
         try {
@@ -185,18 +194,24 @@ IMPORTANT: Utilise les vraies couleurs extraites des screenshots, pas des valeur
           console.log(`  Couleur primaire: ${c.cyan}${config.colors?.primary || 'N/A'}${c.reset}`);
           console.log(`  Style: ${c.cyan}${config.style?.type || 'N/A'}${c.reset}`);
           console.log(`  UI: ${c.cyan}${config.ui?.borderRadius || 'N/A'} corners, ${config.ui?.shadows || 'N/A'} shadows${c.reset}`);
+          logger.info(`Design analysis complete: ${config.style?.type || 'unknown'} style`);
           resolve(config);
         } catch (e) {
           console.log(`${c.yellow}⚠ Erreur parsing design config${c.reset}`);
+          logger.error('Failed to parse design config', e);
           resolve(null);
         }
       } else {
         console.log(`${c.yellow}⚠ Design config non généré, utilisation des valeurs par défaut${c.reset}`);
+        logger.warn('Design config not generated, using defaults');
         resolve(null);
       }
     });
 
-    claude.on('error', reject);
+    claude.on('error', (err) => {
+      logger.end(logContext, -1, err);
+      reject(err);
+    });
   });
 }
 
