@@ -352,7 +352,7 @@ async function runScriptGeneration(
       ? path.join(SCRIPTS_DIR, "creative-generate.js")
       : path.join(SCRIPTS_DIR, "generate-site.js");
 
-    const generateProcess = spawn("node", [scriptPath], {
+    const generateProcess = spawn("node", [scriptPath, sourceUrl || "description", siteName], {
       cwd: clientDir,
       env: {
         ...process.env,
