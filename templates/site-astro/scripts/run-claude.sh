@@ -22,12 +22,11 @@ fi
 WORKDIR="$(pwd)"
 chown -R claude:claude "$WORKDIR" 2>/dev/null || true
 
-# Écrire le prompt (dernier argument) dans un fichier temporaire
-# Cela évite les problèmes d'échappement avec les caractères spéciaux
-PROMPT_FILE=$(mktemp /tmp/claude-prompt-XXXXXX.txt)
-
 # Le dernier argument est le prompt
 for last; do true; done
+
+# Écrire le prompt dans un fichier temporaire (syntaxe compatible BusyBox)
+PROMPT_FILE="/tmp/claude-prompt-$$.txt"
 printf '%s' "$last" > "$PROMPT_FILE"
 chown claude:claude "$PROMPT_FILE"
 chmod 644 "$PROMPT_FILE"
@@ -43,7 +42,7 @@ for arg in "$@"; do
 done
 
 # Créer un script runner pour éviter les problèmes d'échappement shell
-RUNNER=$(mktemp /tmp/claude-runner-XXXXXX.sh)
+RUNNER="/tmp/claude-runner-$$.sh"
 cat > "$RUNNER" << ENDSCRIPT
 #!/bin/sh
 export HOME=/home/claude
