@@ -74,10 +74,10 @@ async function deployStaticSiteDocker(
   await createStaticDockerfile(clientDir);
   await addLogFn(siteId, "INFO", "Dockerfile créé pour le site statique");
 
-  // Build Docker image using host path
+  // Build Docker image using host path (use BuildKit for better compatibility)
   await addLogFn(siteId, "INFO", "Construction de l'image Docker...");
   try {
-    await execAsync(`docker build -t ${imageName} ${hostClientDir}`, { timeout: 180000 });
+    await execAsync(`DOCKER_BUILDKIT=1 docker build -t ${imageName} ${hostClientDir}`, { timeout: 180000 });
     await addLogFn(siteId, "INFO", `Image Docker construite: ${imageName}`);
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Build failed";
