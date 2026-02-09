@@ -15,6 +15,9 @@ const HOST_DATA_PATH = process.env.HOST_DATA_PATH || "/home/debian/sitebuilder";
 // Dokploy server base domain
 const SSLIP_DOMAIN = process.env.SSLIP_DOMAIN || "152.228.131.87.sslip.io";
 
+// Preview domain for client sites (e.g., "preview.lemonlab.fr" -> {siteName}.preview.lemonlab.fr)
+const PREVIEW_DOMAIN = process.env.PREVIEW_DOMAIN || SSLIP_DOMAIN;
+
 /**
  * Convert container path to host path for Dokploy access
  */
@@ -64,7 +67,7 @@ async function deployStaticSiteDocker(
 ): Promise<string> {
   const imageName = `site-${siteName}:latest`;
   const serviceName = `site-${siteName}`;
-  const hostDomain = `${siteName}.${SSLIP_DOMAIN}`;
+  const hostDomain = `${siteName}.${PREVIEW_DOMAIN}`;
 
   // Create Dockerfile in the client directory
   await createStaticDockerfile(clientDir);
@@ -319,7 +322,7 @@ async function runDeploymentProcess(
       await addLog(siteId, "INFO", "2. Configurer un serveur web (nginx) pour servir les fichiers");
 
       // Create a deployment URL placeholder
-      deployedUrl = `https://${siteName}.${SSLIP_DOMAIN}`;
+      deployedUrl = `https://${siteName}.${PREVIEW_DOMAIN}`;
       await addLog(siteId, "INFO", `URL prévue après déploiement: ${deployedUrl}`);
     }
 
