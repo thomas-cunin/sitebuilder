@@ -259,5 +259,157 @@
       "body": "font-sans",
       "family": "Playfair Display, Inter"
     }
+  },
+  "industryRecommendations": {
+    "healthcare": {
+      "style": "modern",
+      "typography": "sans",
+      "heroVariant": "split",
+      "servicesVariant": "grid-3",
+      "testimonialsVariant": "cards",
+      "effects": ["fade", "slide"],
+      "sections": ["hero", "services", "testimonials", "faq", "contact"],
+      "notes": "Clean, trustworthy, accessible design with clear information hierarchy"
+    },
+    "restaurant": {
+      "style": "elegant",
+      "typography": "mixed",
+      "heroVariant": "fullscreen",
+      "servicesVariant": "grid-4",
+      "testimonialsVariant": "slider",
+      "effects": ["fade-slow"],
+      "sections": ["hero", "services", "testimonials", "contact"],
+      "notes": "Warm, inviting atmosphere with emphasis on food imagery"
+    },
+    "technology": {
+      "style": "dark-tech",
+      "typography": "sans",
+      "heroVariant": "animated",
+      "servicesVariant": "grid-4",
+      "testimonialsVariant": "marquee",
+      "effects": ["slide", "glitch"],
+      "sections": ["hero", "services", "pricing", "testimonials", "faq", "contact"],
+      "notes": "Modern, innovative feel with subtle animations and tech aesthetic"
+    },
+    "finance": {
+      "style": "minimal",
+      "typography": "sans",
+      "heroVariant": "centered",
+      "servicesVariant": "grid-3",
+      "testimonialsVariant": "single-featured",
+      "effects": ["fade"],
+      "sections": ["hero", "services", "testimonials", "faq", "contact"],
+      "notes": "Professional, trustworthy with clear value propositions"
+    },
+    "creative": {
+      "style": "bold",
+      "typography": "mixed",
+      "heroVariant": "split",
+      "servicesVariant": "alternating",
+      "testimonialsVariant": "masonry",
+      "effects": ["bounce", "slide"],
+      "sections": ["hero", "services", "testimonials", "contact"],
+      "notes": "Expressive, portfolio-focused with strong visual impact"
+    },
+    "legal": {
+      "style": "elegant",
+      "typography": "serif",
+      "heroVariant": "centered",
+      "servicesVariant": "accordion",
+      "testimonialsVariant": "cards",
+      "effects": ["fade-slow"],
+      "sections": ["hero", "services", "testimonials", "faq", "contact"],
+      "notes": "Authoritative, traditional with emphasis on expertise"
+    },
+    "realestate": {
+      "style": "modern",
+      "typography": "sans",
+      "heroVariant": "fullscreen",
+      "servicesVariant": "grid-3",
+      "testimonialsVariant": "slider",
+      "effects": ["slide", "fade"],
+      "sections": ["hero", "services", "testimonials", "contact"],
+      "notes": "Property-focused with emphasis on location and lifestyle"
+    },
+    "education": {
+      "style": "modern",
+      "typography": "sans",
+      "heroVariant": "split",
+      "servicesVariant": "tabs",
+      "testimonialsVariant": "cards",
+      "effects": ["slide"],
+      "sections": ["hero", "services", "pricing", "testimonials", "faq", "contact"],
+      "notes": "Approachable, informative with clear learning paths"
+    },
+    "fitness": {
+      "style": "bold",
+      "typography": "sans",
+      "heroVariant": "fullscreen",
+      "servicesVariant": "grid-4",
+      "testimonialsVariant": "marquee",
+      "effects": ["bounce", "slide"],
+      "sections": ["hero", "services", "pricing", "testimonials", "contact"],
+      "notes": "Energetic, motivational with strong calls to action"
+    },
+    "beauty": {
+      "style": "elegant",
+      "typography": "mixed",
+      "heroVariant": "split",
+      "servicesVariant": "grid-4",
+      "testimonialsVariant": "masonry",
+      "effects": ["fade-slow"],
+      "sections": ["hero", "services", "pricing", "testimonials", "contact"],
+      "notes": "Luxurious, refined with focus on transformation"
+    },
+    "construction": {
+      "style": "modern",
+      "typography": "sans",
+      "heroVariant": "split",
+      "servicesVariant": "grid-3",
+      "testimonialsVariant": "cards",
+      "effects": ["slide"],
+      "sections": ["hero", "services", "testimonials", "contact"],
+      "notes": "Solid, reliable with emphasis on quality and safety"
+    },
+    "consulting": {
+      "style": "minimal",
+      "typography": "sans",
+      "heroVariant": "centered",
+      "servicesVariant": "alternating",
+      "testimonialsVariant": "single-featured",
+      "effects": ["fade"],
+      "sections": ["hero", "services", "pricing", "testimonials", "faq", "contact"],
+      "notes": "Professional, results-focused with clear methodology"
+    },
+    "hospitality": {
+      "style": "elegant",
+      "typography": "serif",
+      "heroVariant": "video",
+      "servicesVariant": "carousel",
+      "testimonialsVariant": "slider",
+      "effects": ["fade-slow"],
+      "sections": ["hero", "services", "testimonials", "contact"],
+      "notes": "Warm, inviting with emphasis on experience and comfort"
+    },
+    "environment": {
+      "style": "modern",
+      "typography": "sans",
+      "heroVariant": "split",
+      "servicesVariant": "grid-4",
+      "testimonialsVariant": "cards",
+      "effects": ["fade", "slide"],
+      "sections": ["hero", "services", "testimonials", "faq", "contact"],
+      "notes": "Fresh, sustainable with emphasis on positive impact"
+    },
+    "default": {
+      "style": "modern",
+      "typography": "sans",
+      "heroVariant": "centered",
+      "servicesVariant": "grid-4",
+      "testimonialsVariant": "cards",
+      "effects": ["slide", "fade"],
+      "sections": ["hero", "services", "pricing", "testimonials", "faq", "contact"],
+      "notes": "Versatile, professional design suitable for most businesses"
+    }
   }
 }

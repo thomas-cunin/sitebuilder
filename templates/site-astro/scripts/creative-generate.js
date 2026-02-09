@@ -17,6 +17,14 @@ import { createClaudeLogger } from './claude-logger.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+// Load industry palettes
+let industryPalettes = {};
+try {
+  industryPalettes = JSON.parse(readFileSync(join(__dirname, '..', 'data', 'industry-palettes.json'), 'utf-8'));
+} catch (e) {
+  // Will use defaults
+}
+
 /**
  * Retourne la commande et les args pour exécuter Claude CLI
  * Utilise le wrapper si on est root (Docker)
@@ -42,10 +50,16 @@ function getClaudeCommand(prompt) {
 // Import dynamique pour gérer l'absence de puppeteer
 let analyzeDesign = null;
 let validateSite = null;
+let extractImagesFromSource = null;
+let fetchImagesForSite = null;
+let detectIndustry = null;
+let getIndustryPalette = null;
 
 try {
   const mod = await import('./analyze-design.js');
   analyzeDesign = mod.analyzeDesign;
+  detectIndustry = mod.detectIndustry;
+  getIndustryPalette = mod.getIndustryPalette;
 } catch {
   // puppeteer non disponible
 }
@@ -57,8 +71,88 @@ try {
   // puppeteer non disponible
 }
 
+try {
+  const mod = await import('./extract-media.js');
+  extractImagesFromSource = mod.extractImagesFromSource;
+} catch {
+  // puppeteer non disponible
+}
+
+try {
+  const mod = await import('./image-library.js');
+  fetchImagesForSite = mod.fetchImagesForSite;
+} catch {
+  // module non disponible
+}
+
 const TEMPLATE_DIR = join(__dirname, '..');
 const PROMPTS_DIR = join(TEMPLATE_DIR, 'prompts', 'agents');
+
+/**
+ * Fallback industry detection when puppeteer module isn't available
+ */
+function detectIndustryFallback(text) {
+  if (!text) return { industry: 'default', confidence: 0, reasoning: 'No text provided' };
+
+  const normalizedText = text.toLowerCase();
+  const scores = {};
+
+  for (const [industry, data] of Object.entries(industryPalettes)) {
+    if (industry === 'default' || !data.keywords) continue;
+
+    let score = 0;
+    const matchedKeywords = [];
+
+    for (const keyword of data.keywords) {
+      if (normalizedText.includes(keyword.toLowerCase())) {
+        score++;
+        matchedKeywords.push(keyword);
+      }
+    }
+
+    if (score > 0) {
+      scores[industry] = { score, matchedKeywords };
+    }
+  }
+
+  let bestIndustry = 'default';
+  let bestScore = 0;
+  let matchedKeywords = [];
+
+  for (const [industry, data] of Object.entries(scores)) {
+    if (data.score > bestScore) {
+      bestScore = data.score;
+      bestIndustry = industry;
+      matchedKeywords = data.matchedKeywords;
+    }
+  }
+
+  return {
+    industry: bestIndustry,
+    confidence: Math.min(bestScore / 3, 1),
+    reasoning: bestScore > 0
+      ? `Matched keywords: ${matchedKeywords.join(', ')}`
+      : 'No industry keywords matched, using default'
+  };
+}
+
+/**
+ * Fallback get industry palette
+ */
+function getIndustryPaletteFallback(industry) {
+  const palette = industryPalettes[industry] || industryPalettes.default || {
+    primary: '#3B82F6',
+    secondary: '#8B5CF6',
+    accent: '#06B6D4',
+    reasoning: 'Default professional palette'
+  };
+  return {
+    primary: palette.primary,
+    secondary: palette.secondary,
+    accent: palette.accent || palette.secondary,
+    reasoning: palette.reasoning
+  };
+}
 
 // Output directory for generated sites - use CLIENTS_DIR env var if set
 const CLIENTS_DIR = process.env.CLIENTS_DIR || join(TEMPLATE_DIR, 'clients');
@@ -264,12 +358,40 @@ ${JSON.stringify(tokens, null, 2)}
 
 /**
  * Liste des agents de section
+ * condition: function that receives context and returns true if section should be generated
  */
 const SECTION_AGENTS = [
   { name: 'hero', component: 'Hero.astro', required: true },
   { name: 'services', component: 'Services.astro', required: true },
   { name: 'testimonials', component: 'Testimonials.astro', required: true },
-  { name: 'pricing', component: 'Pricing.astro', required: true },
+  {
+    name: 'pricing',
+    component: 'Pricing.astro',
+    required: false,
+    condition: (ctx) => {
+      // Include pricing if:
+      // 1. Explicitly detected on source site
+      // 2. Industry typically has pricing (tech, saas, fitness)
+      // 3. Not explicitly excluded
+      const sections = ctx.designConfig?.sections;
+      const industry = ctx.designConfig?.industry?.detected || ctx.industry?.industry;
+
+      // Industries that typically show pricing
+      const pricingIndustries = ['technology', 'fitness', 'education', 'consulting', 'beauty'];
+
+      if (sections?.hasPricing === false && sections?.pricingType === 'none') {
+        return false;
+      }
+      if (sections?.hasPricing === true) {
+        return true;
+      }
+      if (pricingIndustries.includes(industry)) {
+        return true;
+      }
+      // Default: include pricing for most business sites
+      return true;
+    }
+  },
   { name: 'faq', component: 'FAQ.astro', required: false },
 ];
 
@@ -344,10 +466,14 @@ async function main() {
   logPhase(2, 'Analyse du design');
 
   let designConfig = null;
+  let extractedMedia = null;
+  let industryInfo = null;
+
   if (isUrl && analyzeDesign) {
     try {
       const result = await analyzeDesign(source, outputDir);
       designConfig = result?.config || null;
+      industryInfo = result?.industry || null;
     } catch (e) {
       log(`⚠ Analyse échouée: ${e.message}`, c.yellow);
     }
@@ -355,13 +481,70 @@ async function main() {
     log('→ Analyse design ignorée (puppeteer non disponible)', c.yellow);
   }
 
+  // Phase 2b: Extract media from source (if URL provided)
+  if (isUrl && extractImagesFromSource) {
+    logPhase('2b', 'Extraction des médias');
+    try {
+      extractedMedia = await extractImagesFromSource(source, outputDir);
+      if (extractedMedia?.logo) {
+        log(`✓ Logo extrait: ${extractedMedia.logo}`, c.green);
+      }
+      if (extractedMedia?.hero) {
+        log(`✓ Image hero extraite: ${extractedMedia.hero}`, c.green);
+      }
+    } catch (e) {
+      log(`⚠ Extraction médias échouée: ${e.message}`, c.yellow);
+    }
+  }
+
+  // Detect industry from description if no URL
+  if (!isUrl) {
+    const detectFn = detectIndustry || detectIndustryFallback;
+    industryInfo = detectFn(source);
+    log(`→ Industrie détectée: ${c.cyan}${industryInfo.industry}${c.reset} (${Math.round(industryInfo.confidence * 100)}%)`);
+  }
+
+  // Smart color selection based on industry
   if (!designConfig) {
+    const getPaletteFn = getIndustryPalette || getIndustryPaletteFallback;
+    const industry = industryInfo?.industry || 'default';
+    const palette = getPaletteFn(industry);
+
     designConfig = {
-      colors: { primary: '#3b82f6', secondary: '#8b5cf6' },
+      colors: {
+        primary: palette.primary,
+        secondary: palette.secondary,
+        accent: palette.accent
+      },
       style: { type: 'modern', mood: 'professional' },
-      ui: { borderRadius: 'medium', shadows: 'subtle' }
+      ui: { borderRadius: 'medium', shadows: 'subtle' },
+      industry: industryInfo,
+      sections: {
+        hasPricing: true,
+        pricingType: 'plans'
+      }
     };
-    log('→ Utilisation du design par défaut', c.yellow);
+    log(`→ Palette ${c.cyan}${industry}${c.reset}: ${palette.primary} / ${palette.secondary}`, c.yellow);
+    log(`  ${palette.reasoning}`, c.cyan);
+  }
+
+  // Phase 2c: Fetch library images if needed
+  if (fetchImagesForSite && (!extractedMedia?.hero || extractedMedia.images?.length === 0)) {
+    logPhase('2c', 'Recherche d\'images');
+    const industry = industryInfo?.industry || designConfig?.industry?.detected || 'business';
+    const keywords = isUrl ? industry : `${source} ${industry}`;
+
+    try {
+      const libraryImages = await fetchImagesForSite(keywords, outputDir, {
+        count: 5,
+        category: industry
+      });
+      if (libraryImages.images?.length > 0) {
+        log(`✓ ${libraryImages.images.length} images téléchargées`, c.green);
+      }
+    } catch (e) {
+      log(`⚠ Recherche images échouée: ${e.message}`, c.yellow);
+    }
   }
 
   // Phase 3: Génération du contenu JSON
@@ -527,10 +710,19 @@ INSTRUCTIONS CRITIQUES:
     designConfig,
     creativeDirection,
     content,
+    industry: industryInfo,
+    extractedMedia,
     outputDir: join(outputDir, 'src', 'components')
   };
 
   for (const agent of SECTION_AGENTS) {
+    // Check condition if defined
+    if (agent.condition && !agent.condition(context)) {
+      logAgent(agent.name, 'skip');
+      log(`  → Section ${agent.name} ignorée (non pertinente pour cette industrie)`, c.cyan);
+      continue;
+    }
+
     const prompt = loadAgentPrompt(agent.name, context);
     if (prompt) {
       try {

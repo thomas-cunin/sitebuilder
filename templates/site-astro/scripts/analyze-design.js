@@ -2,7 +2,7 @@
 
 /**
  * Analyse le design d'un site web via screenshots
- * Extrait: couleurs, style, paramètres UI
+ * Extrait: couleurs, style, paramètres UI, sections présentes, industrie
  *
  * Usage: node scripts/analyze-design.js "https://example.com" [output-dir]
  */
@@ -15,6 +15,14 @@ import { fileURLToPath } from 'url';
 import { createClaudeLogger } from './claude-logger.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Load industry palettes for keyword matching
+let industryPalettes = {};
+try {
+  industryPalettes = JSON.parse(readFileSync(join(__dirname, '..', 'data', 'industry-palettes.json'), 'utf-8'));
+} catch (e) {
+  // Will use defaults
+}
 
 /**
  * Retourne la commande et les args pour exécuter Claude CLI
@@ -47,63 +55,155 @@ const c = {
 };
 
 /**
- * Capture des screenshots du site
+ * Detect industry from text content
+ * @param {string} text - Text to analyze (description, page content, etc.)
+ * @returns {{industry: string, confidence: number, reasoning: string}}
  */
-async function captureScreenshots(url, outputDir) {
-  const screenshotsDir = join(outputDir, 'screenshots');
+export function detectIndustry(text) {
+  if (!text) return { industry: 'default', confidence: 0, reasoning: 'No text provided' };
 
-  // S'assurer que le dossier existe
-  if (!existsSync(screenshotsDir)) {
-    mkdirSync(screenshotsDir, { recursive: true });
+  const normalizedText = text.toLowerCase();
+  const scores = {};
+
+  for (const [industry, data] of Object.entries(industryPalettes)) {
+    if (industry === 'default' || !data.keywords) continue;
+
+    let score = 0;
+    const matchedKeywords = [];
+
+    for (const keyword of data.keywords) {
+      if (normalizedText.includes(keyword.toLowerCase())) {
+        score++;
+        matchedKeywords.push(keyword);
+      }
+    }
+
+    if (score > 0) {
+      scores[industry] = { score, matchedKeywords };
+    }
   }
 
-  console.log(`${c.blue}📸 Capture des screenshots...${c.reset}`);
+  // Find best match
+  let bestIndustry = 'default';
+  let bestScore = 0;
+  let matchedKeywords = [];
 
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  for (const [industry, data] of Object.entries(scores)) {
+    if (data.score > bestScore) {
+      bestScore = data.score;
+      bestIndustry = industry;
+      matchedKeywords = data.matchedKeywords;
+    }
+  }
+
+  const confidence = Math.min(bestScore / 3, 1); // Normalize to 0-1
+
+  return {
+    industry: bestIndustry,
+    confidence,
+    reasoning: bestScore > 0
+      ? `Matched keywords: ${matchedKeywords.join(', ')}`
+      : 'No industry keywords matched, using default'
+  };
+}
+
+/**
+ * Get color palette for an industry
+ * @param {string} industry - Industry name
+ * @returns {{primary: string, secondary: string, accent: string, reasoning: string}}
+ */
+export function getIndustryPalette(industry) {
+  const palette = industryPalettes[industry] || industryPalettes.default;
+  return {
+    primary: palette.primary,
+    secondary: palette.secondary,
+    accent: palette.accent || palette.secondary,
+    reasoning: palette.reasoning
+  };
+}
+
+/**
+ * Detect pricing section on page
+ * @param {import('puppeteer').Page} page
+ * @returns {Promise<{hasPricing: boolean, pricingType: string, indicators: string[]}>}
+ */
+async function detectPricingSection(page) {
+  return page.evaluate(() => {
+    const indicators = [];
+    let pricingType = 'none';
+
+    // Check for pricing-related elements
+    const pricingSelectors = [
+      '[class*="pricing"]',
+      '[id*="pricing"]',
+      '[class*="tarif"]',
+      '[id*="tarif"]',
+      '[class*="plans"]',
+      '[class*="price"]',
+    ];
+
+    for (const selector of pricingSelectors) {
+      const elements = document.querySelectorAll(selector);
+      if (elements.length > 0) {
+        indicators.push(`Found ${elements.length} elements matching "${selector}"`);
+      }
+    }
+
+    // Check for price patterns in text
+    const pageText = document.body.innerText;
+
+    // Currency patterns
+    const currencyPatterns = [
+      /\d+[.,]?\d*\s*[€$£]/g,
+      /[€$£]\s*\d+[.,]?\d*/g,
+      /\d+\s*(€|EUR|USD|\$|£)/gi,
+      /prix|price|tarif/gi,
+      /\/\s*mois|\/\s*month|\/\s*an|\/\s*year/gi,
+    ];
+
+    let priceMatches = 0;
+    for (const pattern of currencyPatterns) {
+      const matches = pageText.match(pattern);
+      if (matches) {
+        priceMatches += matches.length;
+      }
+    }
+
+    if (priceMatches > 3) {
+      indicators.push(`Found ${priceMatches} price-related patterns`);
+    }
+
+    // Determine pricing type
+    if (indicators.length > 0 || priceMatches > 3) {
+      // Check for menu indicators (restaurant)
+      const menuKeywords = ['menu', 'carte', 'plat', 'entrée', 'dessert', 'boisson'];
+      const hasMenuKeywords = menuKeywords.some(k => pageText.toLowerCase().includes(k));
+
+      // Check for plans/subscription indicators
+      const planKeywords = ['plan', 'offre', 'formule', 'abonnement', 'starter', 'pro', 'enterprise', 'basic', 'premium'];
+      const hasPlanKeywords = planKeywords.some(k => pageText.toLowerCase().includes(k));
+
+      // Check for quote/contact indicators
+      const quoteKeywords = ['devis', 'sur mesure', 'contactez', 'quote', 'custom', 'contact us'];
+      const hasQuoteKeywords = quoteKeywords.some(k => pageText.toLowerCase().includes(k));
+
+      if (hasMenuKeywords && priceMatches > 5) {
+        pricingType = 'menu';
+      } else if (hasPlanKeywords) {
+        pricingType = 'plans';
+      } else if (hasQuoteKeywords && priceMatches < 3) {
+        pricingType = 'quote';
+      } else if (priceMatches > 0) {
+        pricingType = 'simple';
+      }
+    }
+
+    return {
+      hasPricing: indicators.length > 0 || priceMatches > 3,
+      pricingType,
+      indicators
+    };
   });
-
-  const page = await browser.newPage();
-
-  const screenshots = [];
-
-  try {
-    // Screenshot desktop - page complète
-    await page.setViewport({ width: 1920, height: 1080 });
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
-
-    // Attendre un peu pour les animations
-    await new Promise(r => setTimeout(r, 1500));
-
-    // Screenshot hero/header (visible au chargement)
-    const heroPath = join(screenshotsDir, 'hero-desktop.png');
-    await page.screenshot({ path: heroPath, type: 'png' });
-    screenshots.push(heroPath);
-    console.log(`  ${c.green}✓${c.reset} Hero desktop`);
-
-    // Screenshot page complète
-    const fullPath = join(screenshotsDir, 'full-desktop.png');
-    await page.screenshot({ path: fullPath, fullPage: true, type: 'png' });
-    screenshots.push(fullPath);
-    console.log(`  ${c.green}✓${c.reset} Page complète desktop`);
-
-    // Screenshot mobile
-    await page.setViewport({ width: 375, height: 812 });
-    await page.reload({ waitUntil: 'networkidle2' });
-    await new Promise(r => setTimeout(r, 1000));
-
-    const mobilePath = join(screenshotsDir, 'hero-mobile.png');
-    await page.screenshot({ path: mobilePath, type: 'png' });
-    screenshots.push(mobilePath);
-    console.log(`  ${c.green}✓${c.reset} Hero mobile`);
-
-  } catch (error) {
-    console.log(`  ${c.yellow}⚠ Erreur capture: ${error.message}${c.reset}`);
-  }
-
-  await browser.close();
-  return screenshots;
 }
 
 /**
@@ -141,6 +241,14 @@ Lis ces images et analyse-les visuellement pour extraire:
    - spacing: "compact" | "normal" | "spacious"
    - fontStyle: "sans" | "serif" | "mono" | "mixed"
 
+4. **Industrie détectée** (analyse le contenu visible):
+   - Identifie le secteur d'activité: healthcare | restaurant | technology | finance | creative | legal | realestate | education | fitness | beauty | construction | consulting | hospitality | environment | default
+   - Base-toi sur le contenu visible, les images, et le style général
+
+5. **Sections présentes** (analyse les screenshots):
+   - Identifie si une section pricing/tarifs est présente
+   - Type de pricing: "plans" (abonnements SaaS) | "menu" (restaurant) | "quote" (sur devis) | "simple" (prix unitaires) | "none"
+
 Écris le fichier ${designConfigPath} avec cette structure EXACTE:
 
 \`\`\`json
@@ -161,6 +269,17 @@ Lis ces images et analyse-les visuellement pour extraire:
     "shadows": "none|subtle|medium|strong",
     "spacing": "compact|normal|spacious",
     "fontStyle": "sans|serif|mono|mixed"
+  },
+  "industry": {
+    "detected": "industry-name",
+    "confidence": 0.0-1.0,
+    "reasoning": "Why this industry was detected"
+  },
+  "sections": {
+    "hasPricing": true|false,
+    "pricingType": "plans|menu|quote|simple|none",
+    "hasTestimonials": true|false,
+    "hasFAQ": true|false
   },
   "tailwind": {
     "primaryColor": "#hex",
@@ -279,24 +398,98 @@ export async function analyzeDesign(url, outputDir) {
   }
 
   try {
-    // 1. Capturer les screenshots
-    const screenshots = await captureScreenshots(url, outputDir);
+    // 1. Capturer les screenshots et détecter le pricing
+    const screenshotsDir = join(outputDir, 'screenshots');
+    mkdirSync(screenshotsDir, { recursive: true });
+
+    console.log(`${c.blue}📸 Capture des screenshots...${c.reset}`);
+
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+
+    const page = await browser.newPage();
+    const screenshots = [];
+    let pricingInfo = { hasPricing: false, pricingType: 'none', indicators: [] };
+    let pageText = '';
+
+    try {
+      await page.setViewport({ width: 1920, height: 1080 });
+      await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+      await new Promise(r => setTimeout(r, 1500));
+
+      // Screenshot hero/header
+      const heroPath = join(screenshotsDir, 'hero-desktop.png');
+      await page.screenshot({ path: heroPath, type: 'png' });
+      screenshots.push(heroPath);
+      console.log(`  ${c.green}✓${c.reset} Hero desktop`);
+
+      // Screenshot page complète
+      const fullPath = join(screenshotsDir, 'full-desktop.png');
+      await page.screenshot({ path: fullPath, fullPage: true, type: 'png' });
+      screenshots.push(fullPath);
+      console.log(`  ${c.green}✓${c.reset} Page complète desktop`);
+
+      // Detect pricing section
+      pricingInfo = await detectPricingSection(page);
+      if (pricingInfo.hasPricing) {
+        console.log(`  ${c.cyan}→ Pricing detected: ${pricingInfo.pricingType}${c.reset}`);
+      }
+
+      // Get page text for industry detection
+      pageText = await page.evaluate(() => document.body.innerText);
+
+      // Screenshot mobile
+      await page.setViewport({ width: 375, height: 812 });
+      await page.reload({ waitUntil: 'networkidle2' });
+      await new Promise(r => setTimeout(r, 1000));
+
+      const mobilePath = join(screenshotsDir, 'hero-mobile.png');
+      await page.screenshot({ path: mobilePath, type: 'png' });
+      screenshots.push(mobilePath);
+      console.log(`  ${c.green}✓${c.reset} Hero mobile`);
+
+    } catch (error) {
+      console.log(`  ${c.yellow}⚠ Erreur capture: ${error.message}${c.reset}`);
+    }
+
+    await browser.close();
 
     if (screenshots.length === 0) {
       console.log(`${c.yellow}⚠ Aucun screenshot capturé${c.reset}`);
       return null;
     }
 
-    // 2. Analyser avec Claude
+    // 2. Detect industry from page text
+    const industryInfo = detectIndustry(pageText);
+    console.log(`  ${c.cyan}→ Industry detected: ${industryInfo.industry} (${Math.round(industryInfo.confidence * 100)}%)${c.reset}`);
+
+    // 3. Analyser avec Claude
     const designConfig = await analyzeDesignWithClaude(screenshots, outputDir);
 
-    // 3. Générer la config Tailwind
+    // Merge detected info if Claude didn't provide it
+    if (designConfig) {
+      if (!designConfig.sections) {
+        designConfig.sections = pricingInfo;
+      }
+      if (!designConfig.industry || designConfig.industry.confidence < industryInfo.confidence) {
+        designConfig.industry = industryInfo;
+      }
+
+      // Save updated config
+      writeFileSync(join(outputDir, 'design-config.json'), JSON.stringify(designConfig, null, 2));
+    }
+
+    // 4. Générer la config Tailwind
     const tailwindValues = generateTailwindConfig(designConfig);
 
     return {
       config: designConfig,
       tailwind: tailwindValues,
-      screenshots
+      screenshots,
+      pricing: pricingInfo,
+      industry: industryInfo
     };
 
   } catch (error) {

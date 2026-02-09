@@ -1,0 +1,107 @@
+{
+  "healthcare": {
+    "primary": "#0EA5E9",
+    "secondary": "#10B981",
+    "accent": "#06B6D4",
+    "reasoning": "Blue evokes trust and professionalism in healthcare, green represents health, vitality and growth. Cyan accent adds modernity.",
+    "keywords": ["santé", "médecin", "clinique", "hôpital", "médical", "dentiste", "pharmacie", "kiné", "ostéo", "health", "medical", "clinic", "doctor", "pharmacy"]
+  },
+  "restaurant": {
+    "primary": "#DC2626",
+    "secondary": "#F59E0B",
+    "accent": "#EA580C",
+    "reasoning": "Red stimulates appetite and creates urgency, warm amber evokes quality ingredients and comfort. Orange accent adds energy.",
+    "keywords": ["restaurant", "cuisine", "chef", "bistro", "brasserie", "pizzeria", "traiteur", "food", "dining", "café", "bar"]
+  },
+  "technology": {
+    "primary": "#6366F1",
+    "secondary": "#8B5CF6",
+    "accent": "#3B82F6",
+    "reasoning": "Indigo conveys innovation and intelligence, purple adds creativity and premium feel. Blue accent ensures tech credibility.",
+    "keywords": ["tech", "startup", "saas", "app", "logiciel", "software", "digital", "web", "cloud", "ai", "développement", "informatique", "it"]
+  },
+  "finance": {
+    "primary": "#1D4ED8",
+    "secondary": "#059669",
+    "accent": "#0284C7",
+    "reasoning": "Deep blue represents stability and trust essential in finance, green suggests growth and prosperity. Sky blue accent adds accessibility.",
+    "keywords": ["banque", "finance", "assurance", "comptable", "investissement", "trading", "bank", "insurance", "accounting", "financial", "patrimoine"]
+  },
+  "creative": {
+    "primary": "#EC4899",
+    "secondary": "#8B5CF6",
+    "accent": "#F472B6",
+    "reasoning": "Pink expresses creativity and originality, purple adds artistic depth. Light pink accent keeps it approachable.",
+    "keywords": ["design", "agence", "créatif", "studio", "graphisme", "photo", "vidéo", "art", "mode", "fashion", "marketing", "communication", "publicité"]
+  },
+  "legal": {
+    "primary": "#1E3A5F",
+    "secondary": "#B8860B",
+    "accent": "#334155",
+    "reasoning": "Navy blue conveys authority and expertise, gold adds prestige and tradition. Slate accent maintains professionalism.",
+    "keywords": ["avocat", "juridique", "notaire", "cabinet", "droit", "lawyer", "legal", "attorney", "law firm", "conseil juridique"]
+  },
+  "realestate": {
+    "primary": "#0D9488",
+    "secondary": "#0891B2",
+    "accent": "#14B8A6",
+    "reasoning": "Teal suggests reliability and home comfort, cyan adds freshness and modernity. Light teal accent creates welcoming feel.",
+    "keywords": ["immobilier", "agence immobilière", "real estate", "maison", "appartement", "location", "vente", "propriété", "property", "logement"]
+  },
+  "education": {
+    "primary": "#2563EB",
+    "secondary": "#7C3AED",
+    "accent": "#3B82F6",
+    "reasoning": "Blue represents knowledge and trust, purple adds wisdom and creativity. Lighter blue accent keeps it approachable for students.",
+    "keywords": ["école", "formation", "cours", "éducation", "université", "apprentissage", "education", "school", "training", "academy", "learning", "tutoring"]
+  },
+  "fitness": {
+    "primary": "#EF4444",
+    "secondary": "#F97316",
+    "accent": "#FB923C",
+    "reasoning": "Red evokes energy and passion, orange adds motivation and enthusiasm. Warm accent creates dynamic feel.",
+    "keywords": ["sport", "fitness", "gym", "coach", "musculation", "yoga", "pilates", "personal trainer", "salle de sport", "wellness"]
+  },
+  "beauty": {
+    "primary": "#DB2777",
+    "secondary": "#A855F7",
+    "accent": "#E879F9",
+    "reasoning": "Magenta expresses beauty and femininity, purple adds luxury and elegance. Light purple accent keeps it modern.",
+    "keywords": ["beauté", "salon", "coiffure", "esthétique", "spa", "beauty", "hair", "nails", "skincare", "cosmétique", "maquillage"]
+  },
+  "construction": {
+    "primary": "#D97706",
+    "secondary": "#475569",
+    "accent": "#FBBF24",
+    "reasoning": "Amber conveys reliability and craftsmanship, slate grey adds professionalism. Yellow accent suggests energy and visibility.",
+    "keywords": ["construction", "bâtiment", "rénovation", "travaux", "artisan", "plombier", "électricien", "maçon", "builder", "contractor", "renovation"]
+  },
+  "consulting": {
+    "primary": "#1E40AF",
+    "secondary": "#4338CA",
+    "accent": "#6366F1",
+    "reasoning": "Royal blue suggests expertise and leadership, indigo adds depth and sophistication. Purple accent conveys strategic thinking.",
+    "keywords": ["conseil", "consulting", "consultant", "stratégie", "management", "business", "rh", "resources humaines", "audit", "advisory"]
+  },
+  "hospitality": {
+    "primary": "#7C2D12",
+    "secondary": "#B45309",
+    "accent": "#D97706",
+    "reasoning": "Deep brown evokes warmth and comfort, amber suggests hospitality and quality. Orange accent adds welcoming energy.",
+    "keywords": ["hôtel", "hotel", "chambre", "hébergement", "gîte", "bed and breakfast", "auberge", "lodge", "resort", "hospitality"]
+  },
+  "environment": {
+    "primary": "#15803D",
+    "secondary": "#65A30D",
+    "accent": "#22C55E",
+    "reasoning": "Forest green represents nature and sustainability, lime adds freshness and eco-innovation. Bright green accent signals positive impact.",
+    "keywords": ["écologie", "environnement", "durable", "bio", "green", "sustainable", "eco", "recyclage", "énergie", "solaire", "renouvelable"]
+  },
+  "default": {
+    "primary": "#3B82F6",
+    "secondary": "#8B5CF6",
+    "accent": "#06B6D4",
+    "reasoning": "Blue conveys trust and professionalism universally, purple adds creativity and differentiation. Cyan accent provides modern freshness.",
+    "keywords": []
+  }
+}
