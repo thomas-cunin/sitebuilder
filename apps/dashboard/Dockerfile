@@ -53,8 +53,16 @@ RUN npm install -g @anthropic-ai/claude-code puppeteer
 # Make global npm modules available to scripts
 ENV NODE_PATH=/usr/local/lib/node_modules
 
-# Create directories for Claude auth and data
-RUN mkdir -p /root/.claude /data
+# Create a non-root user for Claude CLI (required: --dangerously-skip-permissions doesn't work as root)
+RUN addgroup -g 1001 -S claude && \
+    adduser -S -u 1001 -G claude claude
+
+# Create directories for Claude auth and data with proper permissions
+RUN mkdir -p /home/claude/.claude /data && \
+    chown -R claude:claude /home/claude/.claude /data
+
+# Set Claude home directory
+ENV CLAUDE_HOME=/home/claude/.claude
 
 COPY --from=builder /app/public ./public
 

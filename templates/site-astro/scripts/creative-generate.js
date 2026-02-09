@@ -15,6 +15,30 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { createClaudeLogger } from './claude-logger.js';
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+/**
+ * Retourne la commande et les args pour exécuter Claude CLI
+ * Utilise le wrapper si on est root (Docker)
+ */
+function getClaudeCommand(prompt) {
+  const isRoot = process.getuid && process.getuid() === 0;
+  const wrapperPath = join(__dirname, 'run-claude.sh');
+
+  if (isRoot && existsSync(wrapperPath)) {
+    // En root, utiliser le wrapper
+    return {
+      cmd: wrapperPath,
+      args: ['--dangerously-skip-permissions', '--print', prompt]
+    };
+  }
+  // Sinon, appeler claude directement
+  return {
+    cmd: 'claude',
+    args: ['--dangerously-skip-permissions', '--print', prompt]
+  };
+}
+
 // Import dynamique pour gérer l'absence de puppeteer
 let analyzeDesign = null;
 let validateSite = null;
@@ -33,7 +57,6 @@ try {
   // puppeteer non disponible
 }
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
 const TEMPLATE_DIR = join(__dirname, '..');
 const PROMPTS_DIR = join(TEMPLATE_DIR, 'prompts', 'agents');
 
@@ -86,15 +109,14 @@ async function runAgent(name, prompt, outputDir) {
   const logger = getLogger(outputDir);
   const logContext = logger.start(name, prompt);
 
+  // Obtenir la commande Claude (avec wrapper si root)
+  const { cmd, args } = getClaudeCommand(prompt);
+
   return new Promise((resolve, reject) => {
-    const claude = spawn('claude', [
-      '--dangerously-skip-permissions',
-      '--print',
-      prompt
-    ], {
+    const claude = spawn(cmd, args, {
       cwd: outputDir,
       stdio: ['ignore', 'pipe', 'pipe'],
-      env: { ...process.env }
+      env: { ...process.env, HOME: process.env.HOME || '/home/claude' }
     });
 
     claude.stdout.on('data', (data) => {

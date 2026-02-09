@@ -53,8 +53,13 @@ RUN npm install -g @anthropic-ai/claude-code puppeteer
 # Make global npm modules available to scripts
 ENV NODE_PATH=/usr/local/lib/node_modules
 
+# Create a non-root user for Claude CLI (--dangerously-skip-permissions doesn't work as root)
+RUN addgroup -g 1001 -S claude && \
+    adduser -S -u 1001 -G claude claude
+
 # Create directories for Claude auth and data
-RUN mkdir -p /root/.claude /data/templates /data/storage
+RUN mkdir -p /root/.claude /home/claude/.claude /data/templates /data/storage && \
+    chown -R claude:claude /home/claude/.claude
 
 COPY --from=builder /app/public ./public
 
@@ -70,13 +75,18 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 # Copy templates into the image
 COPY templates/ /data/templates/
 
+# Make Claude wrapper executable and set permissions
+RUN chmod +x /data/templates/site-astro/scripts/run-claude.sh && \
+    chown -R claude:claude /data/templates /data/storage
+
 # Install template dependencies (for puppeteer scripts)
 WORKDIR /data/templates/site-astro
 RUN npm install --production=false
 WORKDIR /app
 
 # Create storage directory for generated sites
-RUN mkdir -p /data/storage/clients
+RUN mkdir -p /data/storage/clients && \
+    chown -R claude:claude /data/storage/clients
 
 EXPOSE 3000
 
