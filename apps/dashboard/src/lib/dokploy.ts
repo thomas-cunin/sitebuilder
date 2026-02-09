@@ -1,10 +1,8 @@
-import { spawn } from "child_process";
 import path from "path";
 import prisma from "./db";
 
 // Base paths - configurable via env vars
-const ROOT_DIR = process.env.ROOT_DIR || path.resolve(process.cwd(), "..", "..");
-const CLIENTS_DIR = process.env.CLIENTS_DIR || path.join(ROOT_DIR, "storage", "clients");
+const CLIENTS_DIR = process.env.CLIENTS_DIR || path.join(process.cwd(), "..", "..", "storage", "clients");
 
 interface DokployConfig {
   url: string;
@@ -21,7 +19,7 @@ async function getDokployConfig(): Promise<DokployConfig | null> {
   }
 
   return {
-    url: settings.dokployUrl,
+    url: settings.dokployUrl.replace(/\/$/, ""), // Remove trailing slash
     token: settings.dokployToken,
   };
 }
@@ -43,33 +41,37 @@ async function updateJobProgress(jobId: string, progress: number, status?: strin
   });
 }
 
-async function runCommand(command: string, args: string[], env?: Record<string, string>): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const proc = spawn(command, args, {
-      env: { ...process.env, ...env },
-    });
+/**
+ * Make a tRPC API call to Dokploy
+ */
+async function dokployApi<T>(
+  config: DokployConfig,
+  procedure: string,
+  input: Record<string, unknown>
+): Promise<T> {
+  const url = `${config.url}/api/trpc/${procedure}`;
 
-    let stdout = "";
-    let stderr = "";
-
-    proc.stdout.on("data", (data) => {
-      stdout += data.toString();
-    });
-
-    proc.stderr.on("data", (data) => {
-      stderr += data.toString();
-    });
-
-    proc.on("close", (code) => {
-      if (code === 0) {
-        resolve(stdout.trim());
-      } else {
-        reject(new Error(stderr || `Command failed with code ${code}`));
-      }
-    });
-
-    proc.on("error", reject);
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": config.token,
+    },
+    body: JSON.stringify({ json: input }),
   });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Dokploy API error (${response.status}): ${text}`);
+  }
+
+  const data = await response.json();
+
+  if (data.error) {
+    throw new Error(data.error.message || JSON.stringify(data.error));
+  }
+
+  return data.result?.data?.json as T;
 }
 
 export async function startDeployment(siteId: string, siteName: string): Promise<string> {
@@ -112,33 +114,39 @@ async function runDeploymentProcess(
   const projectName = `site-${siteName}`;
   const appName = "web";
 
-  const env = {
-    DOKPLOY_URL: config.url,
-    DOKPLOY_TOKEN: config.token,
-  };
-
   try {
-    // Step 1: Create project
-    await addLog(siteId, "INFO", "Création du projet Dokploy...");
+    // Step 1: Get or create project
+    await addLog(siteId, "INFO", "Recherche/création du projet Dokploy...");
     await updateJobProgress(jobId, 10);
 
-    let projectId: string;
+    let projectId: string | null = null;
+
+    // Try to find existing project
     try {
-      const projectOutput = await runCommand(
-        "dokploy",
-        ["project", "create", "--name", projectName, "--json"],
-        env
+      const projects = await dokployApi<Array<{ projectId: string; name: string }>>(
+        config,
+        "project.all",
+        {}
       );
-      const projectData = JSON.parse(projectOutput);
-      projectId = projectData.id || projectData.projectId;
-    } catch (error) {
-      // Project might already exist, try to get it
-      await addLog(siteId, "INFO", "Projet existant, récupération...");
-      const listOutput = await runCommand("dokploy", ["project", "list", "--json"], env);
-      const projects = JSON.parse(listOutput);
-      const existing = projects.find((p: { name: string }) => p.name === projectName);
-      if (!existing) throw error;
-      projectId = existing.id;
+      const existing = projects?.find((p) => p.name === projectName);
+      if (existing) {
+        projectId = existing.projectId;
+        await addLog(siteId, "INFO", `Projet existant trouvé: ${projectId}`);
+      }
+    } catch {
+      // No projects or error, will create new
+    }
+
+    // Create project if not found
+    if (!projectId) {
+      await addLog(siteId, "INFO", "Création d'un nouveau projet...");
+      const newProject = await dokployApi<{ projectId: string }>(
+        config,
+        "project.create",
+        { name: projectName, description: `Site généré: ${siteName}` }
+      );
+      projectId = newProject.projectId;
+      await addLog(siteId, "INFO", `Projet créé: ${projectId}`);
     }
 
     await prisma.site.update({
@@ -146,43 +154,52 @@ async function runDeploymentProcess(
       data: { dokployProjectId: projectId },
     });
 
-    // Step 2: Create application
-    await addLog(siteId, "INFO", "Création de l'application...");
+    // Step 2: Get or create application
+    await addLog(siteId, "INFO", "Recherche/création de l'application...");
     await updateJobProgress(jobId, 30);
 
-    let appId: string;
+    let appId: string | null = null;
+
+    // Try to find existing app in project
     try {
-      const appOutput = await runCommand(
-        "dokploy",
-        [
-          "app",
-          "create",
-          "--project",
-          projectId,
-          "--name",
-          appName,
-          "--type",
-          "dockerfile",
-          "--path",
-          clientDir,
-          "--json",
-        ],
-        env
+      const project = await dokployApi<{
+        applications: Array<{ applicationId: string; name: string }>;
+      }>(config, "project.one", { projectId });
+
+      const existingApp = project?.applications?.find((a) => a.name === appName);
+      if (existingApp) {
+        appId = existingApp.applicationId;
+        await addLog(siteId, "INFO", `Application existante trouvée: ${appId}`);
+      }
+    } catch {
+      // Will create new app
+    }
+
+    // Create application if not found
+    if (!appId) {
+      await addLog(siteId, "INFO", "Création d'une nouvelle application...");
+
+      // For static sites built with Astro, we use nixpacks or dockerfile
+      const newApp = await dokployApi<{ applicationId: string }>(
+        config,
+        "application.create",
+        {
+          name: appName,
+          projectId: projectId,
+          description: `Site vitrine ${siteName}`,
+        }
       );
-      const appData = JSON.parse(appOutput);
-      appId = appData.id || appData.appId;
-    } catch (error) {
-      // App might already exist
-      await addLog(siteId, "INFO", "Application existante, récupération...");
-      const appsOutput = await runCommand(
-        "dokploy",
-        ["app", "list", "--project", projectId, "--json"],
-        env
-      );
-      const apps = JSON.parse(appsOutput);
-      const existing = apps.find((a: { name: string }) => a.name === appName);
-      if (!existing) throw error;
-      appId = existing.id;
+      appId = newApp.applicationId;
+      await addLog(siteId, "INFO", `Application créée: ${appId}`);
+
+      // Configure the application for static site
+      // Set build path to the client directory
+      await dokployApi(config, "application.update", {
+        applicationId: appId,
+        buildPath: `/data/storage/clients/${siteName}`,
+        // Use the dist folder from Astro build
+        publishDirectory: "dist",
+      });
     }
 
     await prisma.site.update({
@@ -191,19 +208,56 @@ async function runDeploymentProcess(
     });
 
     // Step 3: Deploy
-    await addLog(siteId, "INFO", "Déploiement en cours...");
+    await addLog(siteId, "INFO", "Lancement du déploiement...");
     await updateJobProgress(jobId, 50);
 
-    await runCommand("dokploy", ["deploy", "--app", appId], env);
+    await dokployApi(config, "application.deploy", { applicationId: appId });
 
-    await updateJobProgress(jobId, 80);
+    await addLog(siteId, "INFO", "Déploiement lancé, en attente...");
+    await updateJobProgress(jobId, 70);
 
-    // Step 4: Get deployed URL
-    await addLog(siteId, "INFO", "Récupération de l'URL...");
+    // Step 4: Wait for deployment and get URL
+    // Poll for deployment status
+    let deployedUrl = "";
+    let attempts = 0;
+    const maxAttempts = 30; // 5 minutes max
 
-    const appInfoOutput = await runCommand("dokploy", ["app", "info", "--app", appId, "--json"], env);
-    const appInfo = JSON.parse(appInfoOutput);
-    const deployedUrl = appInfo.url || appInfo.domain || `https://${siteName}.${new URL(config.url).hostname}`;
+    while (attempts < maxAttempts) {
+      await new Promise((resolve) => setTimeout(resolve, 10000)); // Wait 10 seconds
+      attempts++;
+
+      try {
+        const appInfo = await dokployApi<{
+          applicationStatus: string;
+          domains: Array<{ host: string; https: boolean }>;
+        }>(config, "application.one", { applicationId: appId });
+
+        if (appInfo.applicationStatus === "done" || appInfo.applicationStatus === "running") {
+          // Get the URL from domains
+          if (appInfo.domains && appInfo.domains.length > 0) {
+            const domain = appInfo.domains[0];
+            deployedUrl = `${domain.https ? "https" : "http"}://${domain.host}`;
+          } else {
+            // Generate a default URL
+            deployedUrl = `https://${siteName}.${new URL(config.url).hostname.replace(/:\d+$/, "")}.sslip.io`;
+          }
+          break;
+        }
+
+        if (appInfo.applicationStatus === "error") {
+          throw new Error("Le déploiement a échoué sur Dokploy");
+        }
+
+        await updateJobProgress(jobId, 70 + Math.min(attempts, 20));
+      } catch (pollError) {
+        // Continue polling
+        console.error("Poll error:", pollError);
+      }
+    }
+
+    if (!deployedUrl) {
+      deployedUrl = `https://${siteName}.${new URL(config.url).hostname.replace(/:\d+$/, "")}.sslip.io`;
+    }
 
     // Complete
     await addLog(siteId, "INFO", `Déploiement terminé! URL: ${deployedUrl}`);
@@ -234,12 +288,7 @@ export async function getDeploymentStatus(appId: string): Promise<unknown> {
   if (!config) return null;
 
   try {
-    const output = await runCommand(
-      "dokploy",
-      ["app", "info", "--app", appId, "--json"],
-      { DOKPLOY_URL: config.url, DOKPLOY_TOKEN: config.token }
-    );
-    return JSON.parse(output);
+    return await dokployApi(config, "application.one", { applicationId: appId });
   } catch {
     return null;
   }
@@ -249,9 +298,9 @@ export async function deleteDeployment(projectId: string): Promise<void> {
   const config = await getDokployConfig();
   if (!config) return;
 
-  await runCommand(
-    "dokploy",
-    ["project", "delete", "--project", projectId, "--force"],
-    { DOKPLOY_URL: config.url, DOKPLOY_TOKEN: config.token }
-  );
+  try {
+    await dokployApi(config, "project.remove", { projectId });
+  } catch (error) {
+    console.error("Error deleting deployment:", error);
+  }
 }
